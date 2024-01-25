@@ -3,18 +3,17 @@ import 'package:flutter/services.dart';
 // import 'package:tadeeflutter/constants.dart';
 // import 'package:tadeeflutter/navigationscreen.dart';
 import 'package:location/location.dart';
-// import 'package:tadeeflutter/objdetect.dart';
 import 'package:tadeeflutter/objectvision.dart';
 import 'package:tadeeflutter/speechscreen.dart';
-// import 'package:tadeeflutter/ui/detector_view.dart';
 import 'package:tadeeflutter/uploadimage.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-Future<void> main() async {
+Future<void> main() async { 
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MaterialApp(
     home: MyApp(),
+    debugShowCheckedModeBanner:false,
   ));
 }
 
@@ -70,6 +69,7 @@ class _MyAppState extends State<MyApp> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('TaDee'),
+        
       ),
       body: Padding(
         padding: const EdgeInsets.all(18.0),

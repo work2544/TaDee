@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,7 +9,6 @@ class UploadImage extends StatefulWidget {
   final double sourceLat;
   final double sourceLng;
   const UploadImage(this.sourceLat, this.sourceLng, {super.key});
-
   @override
   State<UploadImage> createState() => _UploadImageState();
 }
@@ -18,13 +18,14 @@ class _UploadImageState extends State<UploadImage> {
   dynamic _pickImageError;
   String? _retrieveDataError;
   final ImagePicker _picker = ImagePicker();
-  bool isConnecting = true;
+  bool isConnecting =  true;
 
   final _formKey = GlobalKey<FormState>();
   final _locationName = TextEditingController();
 
   final url =
       'mongodb+srv://worklao21:0881496697_Zaa@cluster0.b0htsww.mongodb.net/TaDee?retryWrites=true&w=majority';
+  static Db? db;
   late GridFS bucket;
 
   @override
@@ -84,13 +85,11 @@ class _UploadImageState extends State<UploadImage> {
                                       builder: (BuildContext context) =>
                                           super.widget));
                               ScaffoldMessenger.of(context).showSnackBar(
-                                // นำค่าข้อมูลไปแสดงหรือใช้งานผ่าน controller
                                 const SnackBar(content: Text('เสร็จสมบูรณ์')),
                               );
                             }
                             if (mediaFile == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                // นำค่าข้อมูลไปแสดงหรือใช้งานผ่าน controller
                                 const SnackBar(content: Text('กรุณาถ่ายภาพ')),
                               );
                             }
@@ -128,7 +127,11 @@ class _UploadImageState extends State<UploadImage> {
       "lng": widget.sourceLng,
       "data": base64Encode(bytes)
     };
-    await bucket.chunks.insert(image);
+    try {
+      await bucket.chunks.insert(image);
+    } catch (e) {
+      log(e.toString());
+    }
   }
 
   Text? _getRetrieveErrorWidget() {
@@ -161,24 +164,40 @@ class _UploadImageState extends State<UploadImage> {
     }
   }
 
-  Future connection() async {
-    Db db = await Db.create(url);
-    await db.open();
-    bucket = GridFS(db, "image");
+  Future<void> connection() async {
+    if (db == null) {
+      try {
+        db = await Db.create(
+            'mongodb+srv://worklao21:0881496697_Zaa@cluster0.b0htsww.mongodb.net/TaDee?retryWrites=true&w=majority');
+        await db!.open();
+        inspect(db);
+        bucket = GridFS(db!, "TaDee");
+        setState(() {
+          isConnecting = false;
+        });
+      } catch (e) {
+        log(e.toString());
+      }
+    }
+    else{
+      setState(() {
+          isConnecting = false;
+        });
+    }
   }
 
   @override
   void initState() {
     super.initState();
     connection();
-    setState(() {
-      isConnecting = false;
-    });
   }
 
   @override
   void dispose() {
     super.dispose();
     _locationName.dispose();
+    if (db != null) {
+      db!.close();
+    }
   }
 }

@@ -3,7 +3,7 @@ import 'package:mongo_dart/mongo_dart.dart' show Db, DbCollection;
 class DBConnection {
   static DBConnection? _instance;
 
-  final String _getConnectionString = 'mongodb+srv://worklao21:0881496697_Zaa@cluster0.b0htsww.mongodb.net/?retryWrites=true&w=majority';
+  final String _getConnectionString = 'mongodb+srv://worklao21:0881496697_Zaa@cluster0.b0htsww.mongodb.net/TaDee?retryWrites=true&w=majority';
 
   late Db _db;
 
