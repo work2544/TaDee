@@ -3,22 +3,25 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:location/location.dart';
 import 'package:mongo_dart/mongo_dart.dart' show Db, GridFS;
 
 class UploadImage extends StatefulWidget {
-  final double sourceLat;
-  final double sourceLng;
-  const UploadImage(this.sourceLat, this.sourceLng, {super.key});
+  const UploadImage({super.key});
   @override
   State<UploadImage> createState() => _UploadImageState();
 }
 
 class _UploadImageState extends State<UploadImage> {
+  LocationData? currentLocation;
+  late bool _serviceEnabled;
+  late PermissionStatus _permissionGranted;
+
   XFile? mediaFile;
   dynamic _pickImageError;
   String? _retrieveDataError;
   final ImagePicker _picker = ImagePicker();
-  bool isConnecting =  true;
+  bool isConnecting = true;
 
   final _formKey = GlobalKey<FormState>();
   final _locationName = TextEditingController();
@@ -107,7 +110,7 @@ class _UploadImageState extends State<UploadImage> {
         imageQuality: 70,
       );
       if (pickedImages == null) return;
-
+      await getCurrentLocation();
       setState(() {
         mediaFile = pickedImages;
       });
@@ -123,8 +126,8 @@ class _UploadImageState extends State<UploadImage> {
 
     Map<String, dynamic> image = {
       "name": _locationName.text,
-      "lat": widget.sourceLat,
-      "lng": widget.sourceLng,
+      "lat": currentLocation!.latitude,
+      "lng": currentLocation!.longitude,
       "data": base64Encode(bytes)
     };
     try {
@@ -132,6 +135,31 @@ class _UploadImageState extends State<UploadImage> {
     } catch (e) {
       log(e.toString());
     }
+  }
+
+  Future<void> getCurrentLocation() async {
+    Location location = Location();
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    location.getLocation().then(
+      (location) {
+        currentLocation = location;
+      },
+    );
   }
 
   Text? _getRetrieveErrorWidget() {
@@ -178,11 +206,10 @@ class _UploadImageState extends State<UploadImage> {
       } catch (e) {
         log(e.toString());
       }
-    }
-    else{
+    } else {
       setState(() {
-          isConnecting = false;
-        });
+        isConnecting = false;
+      });
     }
   }
 
