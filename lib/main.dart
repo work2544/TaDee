@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // import 'package:tadeeflutter/constants.dart';
-// import 'package:tadeeflutter/navigationscreen.dart';
 import 'package:location/location.dart';
 import 'package:tadeeflutter/objectvision.dart';
 import 'package:tadeeflutter/speechscreen.dart';
@@ -30,7 +29,6 @@ class _MyAppState extends State<MyApp> {
 
   late bool _serviceEnabled;
   late PermissionStatus _permissionGranted;
-  LocationData? currentLocation;
 
   Future<void> getCurrentLocation() async {
     Location location = Location();
@@ -50,12 +48,6 @@ class _MyAppState extends State<MyApp> {
       }
     }
 
-    location.getLocation().then(
-      (location) {
-        currentLocation = location;
-        setState(() {});
-      },
-    );
   }
 
   @override
@@ -133,7 +125,7 @@ class _MyAppState extends State<MyApp> {
             child: ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) =>  UploadImage(currentLocation!.longitude!,currentLocation!.longitude!)));
+                      builder: (context) =>  const UploadImage()));
                 },
                 child: const Text('Go upload image')),
           ),
