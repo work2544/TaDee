@@ -26,8 +26,6 @@ class _UploadImageState extends State<UploadImage> {
   final _formKey = GlobalKey<FormState>();
   final _locationName = TextEditingController();
 
-  final url =
-      'mongodb+srv://worklao21:0881496697_Zaa@cluster0.b0htsww.mongodb.net/TaDee?retryWrites=true&w=majority';
   static Db? db;
   late GridFS bucket;
 
@@ -125,7 +123,7 @@ class _UploadImageState extends State<UploadImage> {
     final bytes = await File(mediaFile!.path).readAsBytes();
 
     Map<String, dynamic> image = {
-      "name": _locationName.text,
+      "name": _locationName.text.replaceAll(' ', ''),
       "lat": currentLocation!.latitude,
       "lng": currentLocation!.longitude,
       "data": base64Encode(bytes)
@@ -198,7 +196,6 @@ class _UploadImageState extends State<UploadImage> {
         db = await Db.create(
             'mongodb+srv://worklao21:0881496697_Zaa@cluster0.b0htsww.mongodb.net/TaDee?retryWrites=true&w=majority');
         await db!.open();
-        inspect(db);
         bucket = GridFS(db!, "TaDee");
         setState(() {
           isConnecting = false;
