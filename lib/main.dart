@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // import 'package:tadeeflutter/constants.dart';
 import 'package:location/location.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tadeeflutter/objectvision.dart';
 import 'package:tadeeflutter/speechscreen.dart';
 import 'package:tadeeflutter/uploadimage.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-Future<void> main() async { 
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MaterialApp(
     home: MyApp(),
-    debugShowCheckedModeBanner:false,
+    debugShowCheckedModeBanner: false,
   ));
 }
 
@@ -27,27 +28,29 @@ class _MyAppState extends State<MyApp> {
   TextEditingController latController = TextEditingController();
   TextEditingController lngController = TextEditingController();
 
-  late bool _serviceEnabled;
-  late PermissionStatus _permissionGranted;
+  // late bool _serviceEnabled;
+  // late PermissionStatus _permissionGranted;
 
   Future<void> getCurrentLocation() async {
     Location location = Location();
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        return;
-      }
-    }
+    await Permission.microphone.request();
+    await Permission.camera.request();
+    await Permission.location.request();
+    // _serviceEnabled = await location.serviceEnabled();
+    // if (!_serviceEnabled) {
+    //   _serviceEnabled = await location.requestService();
+    //   if (!_serviceEnabled) {
+    //     return;
+    //   }
+    // }
 
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
-
+    // _permissionGranted = await location.hasPermission();
+    // if (_permissionGranted == PermissionStatus.denied) {
+    //   _permissionGranted = await location.requestPermission();
+    //   if (_permissionGranted != PermissionStatus.granted) {
+    //     return;
+    //   }
+    // }
   }
 
   @override
@@ -61,7 +64,6 @@ class _MyAppState extends State<MyApp> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('TaDee'),
-        
       ),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
@@ -125,7 +127,7 @@ class _MyAppState extends State<MyApp> {
             child: ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) =>  const UploadImage()));
+                      builder: (context) => const UploadImage()));
                 },
                 child: const Text('Go upload image')),
           ),
