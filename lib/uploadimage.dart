@@ -105,12 +105,13 @@ class _UploadImageState extends State<UploadImage> {
     try {
       final pickedImages = await _picker.pickImage(
         source: ImageSource.camera,
-        imageQuality: 70,
+        imageQuality: 50,
       );
       if (pickedImages == null) return;
       await getCurrentLocation();
       setState(() {
         mediaFile = pickedImages;
+        log('done pick image');
       });
     } catch (e) {
       setState(() {
@@ -198,12 +199,14 @@ class _UploadImageState extends State<UploadImage> {
         await db!.open();
         bucket = GridFS(db!, "TaDee");
         setState(() {
+          log('done connecting');
           isConnecting = false;
         });
       } catch (e) {
         log(e.toString());
       }
     } else {
+      bucket = GridFS(db!, "TaDee");
       setState(() {
         isConnecting = false;
       });
@@ -220,8 +223,5 @@ class _UploadImageState extends State<UploadImage> {
   void dispose() {
     super.dispose();
     _locationName.dispose();
-    if (db != null) {
-      db!.close();
-    }
   }
 }

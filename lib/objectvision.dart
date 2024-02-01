@@ -1,6 +1,14 @@
-import 'package:flutter_vision/flutter_vision.dart';
+import 'dart:async';
+import 'dart:developer';
+import 'dart:io';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_vision/flutter_vision.dart';
 import 'package:tadeeflutter/services/yolovideo.dart';
+
+
+
 
 
 
@@ -13,11 +21,22 @@ class ObjectVision extends StatefulWidget {
 
 class _ObjectVisionState extends State<ObjectVision> {
   late FlutterVision vision;
-  
+  String text = "Stop Service";
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: YoloVideo(vision: vision),
+    );
+    
+  }
+
+  
   @override
   void initState() {
     super.initState();
+    WidgetsFlutterBinding.ensureInitialized();
+    
     vision = FlutterVision();
   }
 
@@ -26,14 +45,4 @@ class _ObjectVisionState extends State<ObjectVision> {
     super.dispose();
     await vision.closeYoloModel();
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: YoloVideo(vision: vision),
-    );
-  }
 }
-
-
-

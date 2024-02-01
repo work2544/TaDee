@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // import 'package:tadeeflutter/constants.dart';
-import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:tadeeflutter/backGroundnotification.dart';
 import 'package:tadeeflutter/objectvision.dart';
 import 'package:tadeeflutter/speechscreen.dart';
 import 'package:tadeeflutter/uploadimage.dart';
@@ -32,25 +32,10 @@ class _MyAppState extends State<MyApp> {
   // late PermissionStatus _permissionGranted;
 
   Future<void> getCurrentLocation() async {
-    Location location = Location();
     await Permission.microphone.request();
     await Permission.camera.request();
     await Permission.location.request();
-    // _serviceEnabled = await location.serviceEnabled();
-    // if (!_serviceEnabled) {
-    //   _serviceEnabled = await location.requestService();
-    //   if (!_serviceEnabled) {
-    //     return;
-    //   }
-    // }
-
-    // _permissionGranted = await location.hasPermission();
-    // if (_permissionGranted == PermissionStatus.denied) {
-    //   _permissionGranted = await location.requestPermission();
-    //   if (_permissionGranted != PermissionStatus.granted) {
-    //     return;
-    //   }
-    // }
+    await Permission.notification.request();
   }
 
   @override
@@ -103,6 +88,15 @@ class _MyAppState extends State<MyApp> {
                       'https://www.google.com/maps/dir/?api=1&destination=${double.parse(latController.text)},${double.parse(lngController.text)}&travelmode=walking'));
                 },
                 child: const Text('Get Directions')),
+          ),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const BackgroundNotification()));
+                },
+                child: const Text('Go BackgroundService')),
           ),
           SizedBox(
             width: double.infinity,

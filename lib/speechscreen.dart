@@ -16,6 +16,7 @@ class SpeechScreen extends StatefulWidget {
 
 class _SpeechScreenState extends State<SpeechScreen> {
   final SpeechToText _speechToText = SpeechToText();
+
   String _speechWord = '';
   bool initSpeech = false;
   bool onSpeech = false;
@@ -39,9 +40,14 @@ class _SpeechScreenState extends State<SpeechScreen> {
     _connection();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    flutterTts.stop();
+  }
+
   void _initSpeech() async {
     await _speechToText.initialize();
-
     setState(() {
       initSpeech = true;
       log('done _initSpeech');
@@ -71,8 +77,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
       onSpeech = false;
       if (destination != null) {
         log('destination ${destination['name']} ${destination['lat']} ${destination['lng']}');
-      }
-      else{
+      } else {
         _speak('ฉันไม่รู้จักสถานที่นี้');
       }
     });
@@ -117,7 +122,6 @@ class _SpeechScreenState extends State<SpeechScreen> {
     if (isAndroid) {
       _getDefaultVoice();
     }
-
     if (isAndroid) {
       flutterTts.setInitHandler(() {
         setState(() {
