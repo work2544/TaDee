@@ -53,33 +53,6 @@ class _MyAppState extends State<MyApp> {
       body: Padding(
         padding: const EdgeInsets.all(18.0),
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Text(
-            'Enter your destination',
-            style: TextStyle(fontSize: 40),
-          ),
-          const SizedBox(
-            height: 30,
-          ),
-          TextField(
-            controller: latController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'latitude',
-            ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          TextField(
-            controller: lngController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'longitute',
-            ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(

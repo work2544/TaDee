@@ -1,11 +1,11 @@
 import 'dart:developer';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:mongo_dart/mongo_dart.dart' show Db, DbCollection;
 import 'package:url_launcher/url_launcher.dart';
+
+import 'services/texttospeech.dart';
 
 class SpeechScreen extends StatefulWidget {
   const SpeechScreen({super.key});
@@ -26,13 +26,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
   bool isConnecting = true;
   var destination;
 
-  late FlutterTts flutterTts;
-  String? language = 'th-TH';
-  String? engine = 'com.google.android.tts';
-  bool get isAndroid => Platform.isAndroid;
-  double volume = 1;
-  double pitch = 1.0;
-  double rate = 0.5;
+  TextToSpeech customTTs = TextToSpeech();
 
   @override
   void initState() {
@@ -43,14 +37,13 @@ class _SpeechScreenState extends State<SpeechScreen> {
   @override
   void dispose() {
     super.dispose();
-    flutterTts.stop();
+    TextToSpeech().stop();
   }
 
   void _initSpeech() async {
     await _speechToText.initialize();
     setState(() {
       initSpeech = true;
-      log('done _initSpeech');
     });
   }
 
@@ -60,7 +53,6 @@ class _SpeechScreenState extends State<SpeechScreen> {
       pauseFor: const Duration(seconds: 4),
     );
     setState(() {
-      log('start listening');
       onSpeech = true;
     });
   }
@@ -73,12 +65,11 @@ class _SpeechScreenState extends State<SpeechScreen> {
           'https://www.google.com/maps/dir/?api=1&destination=${destination['lat']},${destination['lng']}&travelmode=walking'));
     }
     setState(() {
-      log('stop listening');
       onSpeech = false;
       if (destination != null) {
         log('destination ${destination['name']} ${destination['lat']} ${destination['lng']}');
       } else {
-        _speak('ฉันไม่รู้จักสถานที่นี้');
+        TextToSpeech().speak('ฉันไม่รู้จักสถานที่นี้');
       }
     });
   }
@@ -100,56 +91,19 @@ class _SpeechScreenState extends State<SpeechScreen> {
         await db!.open();
         collection = db!.collection('TaDee.chunks');
         _initSpeech();
-        _initTts();
         setState(() {
-          log('done connection');
-          _speak('กรุณาแตะหน้าจอแล้วพูดชื่อสถานที่');
+          TextToSpeech().speak('กรุณาแตะหน้าจอแล้วพูดชื่อสถานที่');
           isConnecting = false;
         });
       } catch (e) {
         log(e.toString());
       }
     } else {
+      _initSpeech();
       setState(() {
         isConnecting = false;
       });
     }
-  }
-
-  _initTts() {
-    flutterTts = FlutterTts();
-    _setAwaitOptions();
-    if (isAndroid) {
-      _getDefaultVoice();
-    }
-    if (isAndroid) {
-      flutterTts.setInitHandler(() {
-        setState(() {
-          log('done initTTS');
-        });
-      });
-    }
-  }
-
-  Future _getDefaultVoice() async {
-    var voice = await flutterTts.getDefaultVoice;
-    if (voice != null) {
-      log(voice.toString());
-    }
-  }
-
-  Future _speak(String newVoiceText) async {
-    await flutterTts.setVolume(volume);
-    await flutterTts.setSpeechRate(rate);
-    await flutterTts.setPitch(pitch);
-
-    if (newVoiceText.isNotEmpty) {
-      await flutterTts.speak(newVoiceText);
-    }
-  }
-
-  Future _setAwaitOptions() async {
-    await flutterTts.awaitSpeakCompletion(true);
   }
 
   @override

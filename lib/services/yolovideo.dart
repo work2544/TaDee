@@ -1,6 +1,10 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vision/flutter_vision.dart';
+
 class YoloVideo extends StatefulWidget {
   final FlutterVision vision;
   const YoloVideo({Key? key, required this.vision}) : super(key: key);
@@ -124,6 +128,7 @@ class _YoloVideoState extends State<YoloVideo> {
         classThreshold: 0.5);
     if (result.isNotEmpty) {
       setState(() {
+        log(result as String);
         yoloResults = result;
       });
     }
@@ -133,15 +138,42 @@ class _YoloVideoState extends State<YoloVideo> {
     setState(() {
       isDetecting = true;
     });
+
     if (controller.value.isStreamingImages) {
       return;
     }
-    await controller.startImageStream((image) async {
+
+    Timer.periodic(const Duration(seconds: 5), (timer) {
+      log('interval');
       if (isDetecting) {
+        Timer(const Duration(milliseconds: 2000), () {
+          startStream();
+          Timer(const Duration(milliseconds: 1000), () {
+          stopStream();
+          });
+          
+        });
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  Future<void> startStream() async {
+    await controller.startImageStream((image) {
+      if (isDetecting) {
+        log('Start image stream');
         cameraImage = image;
         yoloOnFrame(image);
       }
     });
+  }
+
+  void stopStream() {
+    if (controller.value.isStreamingImages) {
+      log('Stopping image stream');
+      controller.stopImageStream();
+    }
   }
 
   Future<void> stopDetection() async {

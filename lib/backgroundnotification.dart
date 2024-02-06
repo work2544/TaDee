@@ -1,18 +1,26 @@
-import 'package:flutter/material.dart';
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+String? language = 'th-TH';
+String? engine = 'com.google.android.tts';
+bool get isAndroid => Platform.isAndroid;
+double volume = 1;
+double pitch = 1.0;
+double rate = 0.5;
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
+  final flutterTts = FlutterTts();
+  await flutterTts.awaitSpeakCompletion(true);
 
   /// OPTIONAL, using custom notification channel id
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -26,12 +34,11 @@ Future<void> initializeService() async {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  
-    await flutterLocalNotificationsPlugin.initialize(
-      const InitializationSettings(
-        android: AndroidInitializationSettings('ic_bg_service_small'),
-      ),
-    );
+  await flutterLocalNotificationsPlugin.initialize(
+    const InitializationSettings(
+      android: AndroidInitializationSettings('ic_bg_service_small'),
+    ),
+  );
 
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
@@ -97,6 +104,8 @@ void onStart(ServiceInstance service) async {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  final flutterTts = FlutterTts();
+
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
       service.setAsForegroundService();
@@ -112,9 +121,15 @@ void onStart(ServiceInstance service) async {
   });
 
   // bring to foreground
-  Timer.periodic(const Duration(seconds: 1), (timer) async {
+  Timer.periodic(const Duration(seconds: 3), (timer) async {
     if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
+        await flutterTts.setVolume(volume);
+        await flutterTts.setSpeechRate(rate);
+        await flutterTts.setPitch(pitch);
+        await flutterTts.setLanguage('th-TH');
+        await flutterTts.speak('ทดสอบ');
+
         /// OPTIONAL for use custom notification
         /// the notification id must be equals with AndroidConfiguration when you call configure() method.
         flutterLocalNotificationsPlugin.show(
@@ -245,10 +260,6 @@ class _BackgroundNotificationState extends State<BackgroundNotification> {
               child: LogView(),
             ),
           ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {},
-          child: const Icon(Icons.play_arrow),
         ),
       ),
     );
