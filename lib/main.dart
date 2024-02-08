@@ -56,29 +56,11 @@ class _MyAppState extends State<MyApp> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-                onPressed: () async {
-                  await launchUrl(Uri.parse(
-                      'https://www.google.com/maps/dir/?api=1&destination=${double.parse(latController.text)},${double.parse(lngController.text)}&travelmode=walking'));
-                },
-                child: const Text('Get Directions')),
-          ),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const BackgroundNotification()));
-                },
-                child: const Text('Go BackgroundService')),
-          ),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => const ObjectVision()));
                 },
-                child: const Text('Go ML')),
+                child: const Text('ML')),
           ),
           SizedBox(
             width: double.infinity,
@@ -87,7 +69,7 @@ class _MyAppState extends State<MyApp> {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => const SpeechScreen()));
                 },
-                child: const Text('Go Speech to text')),
+                child: const Text('Speech to text')),
           ),
           SizedBox(
             width: double.infinity,
@@ -96,7 +78,7 @@ class _MyAppState extends State<MyApp> {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => const UploadImage()));
                 },
-                child: const Text('Go upload image')),
+                child: const Text('Upload image')),
           ),
         ]),
       ),

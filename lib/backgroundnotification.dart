@@ -10,18 +10,11 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-String? language = 'th-TH';
-String? engine = 'com.google.android.tts';
 bool get isAndroid => Platform.isAndroid;
-double volume = 1;
-double pitch = 1.0;
-double rate = 0.5;
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
-  final flutterTts = FlutterTts();
-  await flutterTts.awaitSpeakCompletion(true);
-
+  
   /// OPTIONAL, using custom notification channel id
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'my_foreground', // id
@@ -51,7 +44,7 @@ Future<void> initializeService() async {
       onStart: onStart,
 
       // auto start service
-      autoStart: true,
+      autoStart: false,
       isForegroundMode: true,
 
       notificationChannelId: 'my_foreground',
@@ -104,7 +97,6 @@ void onStart(ServiceInstance service) async {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  final flutterTts = FlutterTts();
 
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
@@ -124,11 +116,6 @@ void onStart(ServiceInstance service) async {
   Timer.periodic(const Duration(seconds: 3), (timer) async {
     if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
-        await flutterTts.setVolume(volume);
-        await flutterTts.setSpeechRate(rate);
-        await flutterTts.setPitch(pitch);
-        await flutterTts.setLanguage('th-TH');
-        await flutterTts.speak('ทดสอบ');
 
         /// OPTIONAL for use custom notification
         /// the notification id must be equals with AndroidConfiguration when you call configure() method.

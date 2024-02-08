@@ -24,7 +24,6 @@ class _SpeechScreenState extends State<SpeechScreen> {
   late DbCollection collection;
   static Db? db;
   bool isConnecting = true;
-  var destination;
 
   TextToSpeech customTTs = TextToSpeech();
 
@@ -59,7 +58,7 @@ class _SpeechScreenState extends State<SpeechScreen> {
 
   void _stopListening() async {
     await _speechToText.stop();
-    destination = await collection.findOne({'name': _speechWord});
+    var destination = await collection.findOne({'name': _speechWord});
     if (destination != null) {
       await launchUrl(Uri.parse(
           'https://www.google.com/maps/dir/?api=1&destination=${destination['lat']},${destination['lng']}&travelmode=walking'));

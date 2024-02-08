@@ -1,7 +1,10 @@
 import 'package:flutter_tts/flutter_tts.dart';
 
 class TextToSpeech {
+  //Instance
   static final TextToSpeech _instance = TextToSpeech._internal();
+
+  //TTS
   final double volume = 1;
   final double pitch = 1.0;
   final double rate = 0.5;

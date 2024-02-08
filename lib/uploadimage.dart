@@ -111,7 +111,6 @@ class _UploadImageState extends State<UploadImage> {
       await getCurrentLocation();
       setState(() {
         mediaFile = pickedImages;
-        
       });
     } catch (e) {
       setState(() {
@@ -199,7 +198,6 @@ class _UploadImageState extends State<UploadImage> {
         await db!.open();
         bucket = GridFS(db!, "TaDee");
         setState(() {
-          
           isConnecting = false;
         });
       } catch (e) {
