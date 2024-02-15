@@ -1,80 +1,80 @@
-person
-bicycle
-car
-motorcycle
-airplane
-bus
-train
-truck
-boat
-traffic light
-fire hydrant
-stop sign
+คน
+จักรยาน
+รถยนต์
+มอเตอร์ไซค์
+เครื่องบิน
+รถบัส
+รถไฟ
+รถบรรทก
+เรือ
+ไฟแดง
+หัวดับเพลิง
+ป้ายหยุด
 parking meter
-bench
-bird
-cat
-dog
-horse
-sheep
-cow
-elephant
-bear
-zebra
-giraffe
-backpack
-umbrella
-handbag
-tie
-suitcase
-frisbee
-skis
+ม้านั่ง
+นก
+แมว
+หมา
+ม้า
+แกะ
+วัว
+ช้าง
+หมี
+ม้าลาย
+ยีราฟ
+กระเป๋าเป้
+ร่ม
+กระเป๋าถือ
+เน็กไท
+กระเป๋าเดินทาง
+จานร่อน
+สกี
 snowboard
 sports ball
-kite
+ว่าว
 baseball bat
 baseball glove
 skateboard
 surfboard
 tennis racket
-bottle
+ขวด
 wine glass
-cup
-fork
-knife
-spoon
-bowl
-banana
-apple
-sandwich
-orange
+ถ้วย
+ส้อม
+มีด
+ช้อน
+ชาม
+กล้วย
+แอปเปิ้ล
+แซนวิช
+ส้ม
 broccoli
 carrot
 hot dog
 pizza
 donut
 cake
-chair
+เก้าอี้
 couch
 potted plant
-bed
+เตียงนอน
 dining table
-toilet
+ห้องน้ำ
 tv
 laptop
 mouse
 remote
 keyboard
-cell phone
+มือถือ
 microwave
 oven
 toaster
 sink
-refrigerator
-book
-clock
-vase
-scissors
+ตู้เย็น
+สมุด
+นาฬิกา
+แจกัน
+กรรไกร
 teddy bear
 hair drier
 toothbrush
