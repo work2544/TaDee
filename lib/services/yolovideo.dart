@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:camera/camera.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_vision/flutter_vision.dart';
-
-
+import 'package:tadeeflutter/services/texttospeech.dart';
 
 class YoloVideo extends StatefulWidget {
   final FlutterVision vision;
@@ -31,7 +29,6 @@ class _YoloVideoState extends State<YoloVideo> {
   static const String _modelPath = 'assets/yolov8n_float32.tflite';
   static const String _labelPath = 'assets/yolov8n_float32_labels.txt';
 
-
   @override
   void initState() {
     super.initState();
@@ -42,12 +39,13 @@ class _YoloVideoState extends State<YoloVideo> {
   init() async {
     cameras = await availableCameras();
     controller = CameraController(cameras[0], ResolutionPreset.medium);
-    controller.initialize().then((value) {
+    await controller.initialize().then((value) {
       loadYoloModel().then((value) {
         setState(() {
           isLoaded = true;
           isDetecting = false;
           yoloResults = [];
+          WidgetsBinding.instance.addPostFrameCallback((_) => startDetection());
         });
       });
     });
@@ -55,8 +53,9 @@ class _YoloVideoState extends State<YoloVideo> {
 
   @override
   void dispose() async {
+    // stopDetection();
+    // controller.dispose();
     super.dispose();
-    controller.dispose();
   }
 
   @override
@@ -90,27 +89,25 @@ class _YoloVideoState extends State<YoloVideo> {
               border: Border.all(
                   width: 5, color: Colors.white, style: BorderStyle.solid),
             ),
-            child: isDetecting
-                ? IconButton(
-                    onPressed: () async {
-                      stopDetection();
-                    },
-                    icon: const Icon(
-                      Icons.stop,
-                      color: Colors.red,
-                    ),
-                    iconSize: 50,
-                  )
-                : IconButton(
-                    onPressed: () async {
-                      await startDetection();
-                    },
-                    icon: const Icon(
-                      Icons.play_arrow,
-                      color: Colors.white,
-                    ),
-                    iconSize: 50,
-                  ),
+            // child: isDetecting
+            //     ? IconButton(
+            //         onPressed: () async {
+            //           stopDetection();
+            //         },
+            //         icon: const Icon(
+            //           Icons.stop,
+            //           color: Colors.red,
+            //         ),
+            //         iconSize: 50,
+            //       )
+            //     : IconButton(
+            //         onPressed: () async {},
+            //         icon: const Icon(
+            //           Icons.play_arrow,
+            //           color: Colors.white,
+            //         ),
+            //         iconSize: 50,
+            //       ),
           ),
         ),
       ],
@@ -125,6 +122,7 @@ class _YoloVideoState extends State<YoloVideo> {
         numThreads: 2,
         useGpu: false);
     setState(() {
+      log('load model');
       isLoaded = true;
     });
   }
@@ -206,7 +204,7 @@ class _YoloVideoState extends State<YoloVideo> {
     Color colorPick = const Color.fromARGB(255, 50, 233, 30);
     getOject();
     return yoloResults.map((result) {
-      // TextToSpeech().speak(result['tag']);
+      TextToSpeech().speak(result['tag']);
       return Positioned(
         left: result["box"][0] * factorX,
         top: result["box"][1] * factorY,

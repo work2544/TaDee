@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:tadeeflutter/backGroundnotification.dart';
 import 'package:tadeeflutter/objectvision.dart';
 import 'package:tadeeflutter/speechscreen.dart';
 import 'package:tadeeflutter/uploadimage.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,9 +24,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   TextEditingController latController = TextEditingController();
   TextEditingController lngController = TextEditingController();
-
-  // late bool _serviceEnabled;
-  // late PermissionStatus _permissionGranted;
 
   Future<void> getCurrentLocation() async {
     await Permission.microphone.request();
