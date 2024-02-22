@@ -29,7 +29,6 @@ class _MyAppState extends State<MyApp> {
     await Permission.microphone.request();
     await Permission.camera.request();
     await Permission.location.request();
-    await Permission.notification.request();
   }
 
   @override

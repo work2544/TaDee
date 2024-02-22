@@ -78,38 +78,7 @@ class _YoloVideoState extends State<YoloVideo> {
           ),
         ),
         ...displayBoxesAroundRecognizedObjects(size),
-        Positioned(
-          bottom: 75,
-          width: MediaQuery.of(context).size.width,
-          child: Container(
-            height: 80,
-            width: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                  width: 5, color: Colors.white, style: BorderStyle.solid),
-            ),
-            // child: isDetecting
-            //     ? IconButton(
-            //         onPressed: () async {
-            //           stopDetection();
-            //         },
-            //         icon: const Icon(
-            //           Icons.stop,
-            //           color: Colors.red,
-            //         ),
-            //         iconSize: 50,
-            //       )
-            //     : IconButton(
-            //         onPressed: () async {},
-            //         icon: const Icon(
-            //           Icons.play_arrow,
-            //           color: Colors.white,
-            //         ),
-            //         iconSize: 50,
-            //       ),
-          ),
-        ),
+      
       ],
     );
   }
@@ -121,10 +90,7 @@ class _YoloVideoState extends State<YoloVideo> {
         modelVersion: "yolov8",
         numThreads: 2,
         useGpu: false);
-    setState(() {
-      log('load model');
-      isLoaded = true;
-    });
+
   }
 
   Future<void> yoloOnFrame(CameraImage cameraImage) async {
@@ -195,6 +161,9 @@ class _YoloVideoState extends State<YoloVideo> {
     yoloResults.map((result) {
       objects.add(result['tag']);
     });
+    if (objects.isNotEmpty) {
+      TextToSpeech().speak(objects[0]);
+    }
   }
 
   List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
@@ -202,9 +171,9 @@ class _YoloVideoState extends State<YoloVideo> {
     double factorX = screen.width / (cameraImage?.height ?? 1);
     double factorY = screen.height / (cameraImage?.width ?? 1);
     Color colorPick = const Color.fromARGB(255, 50, 233, 30);
-    getOject();
+    // getOject();
     return yoloResults.map((result) {
-      TextToSpeech().speak(result['tag']);
+      log(result['tag']);
       return Positioned(
         left: result["box"][0] * factorX,
         top: result["box"][1] * factorY,
