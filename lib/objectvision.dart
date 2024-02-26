@@ -19,25 +19,8 @@ class _ObjectVisionState extends State<ObjectVision>
 
   @override
   Widget build(BuildContext context) {
-    return PiPSwitcher(
-      childWhenDisabled: Scaffold(
-        //body: YoloVideo(vision: vision),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: FutureBuilder<bool>(
-          future: floating.isPipAvailable,
-          initialData: false,
-          builder: (context, snapshot) => snapshot.data ?? false
-              ? FloatingActionButton.extended(
-                  onPressed: () => enablePip(context),
-                  label: const Text('Enable PiP'),
-                  icon: const Icon(Icons.picture_in_picture),
-                )
-              : const Card(
-                  child: Text('PiP unavailable'),
-                ),
-        ),
-      ),
-      childWhenEnabled: YoloVideo(vision: vision),
+    return Scaffold(
+      body: YoloVideo(vision: vision),
     );
   }
 
