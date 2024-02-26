@@ -93,10 +93,6 @@ class _YoloVideoState extends State<YoloVideo> {
   }
 
   Future<void> yoloOnFrame(CameraImage cameraImage) async {
-    FlutterView view = WidgetsBinding.instance.platformDispatcher.views.first;
-    Size size = view.physicalSize;
-    double _width = size.width;
-    double _height = size.height;
 
     final result = await widget.vision.yoloOnFrame(
         bytesList: cameraImage.planes.map((plane) => plane.bytes).toList(),
@@ -111,23 +107,9 @@ class _YoloVideoState extends State<YoloVideo> {
         'ด้านหน้า': {},
         'ด้านขวา': {}
       };
-      // double factorX = _width / (cameraImage.height ?? 1);
-      // double factorY = _height / (cameraImage.width ?? 1);
-
+    
       for (var i = 0; i < result.length; i++) {
-        // double startX = result[i]["box"][0] * factorX;
-        // double endX = result[i]["box"][2] * factorX;
 
-        // log('$_width , $_height');
-        // log(result[i]["box"].toString());
-        // log('${result[i]['tag']} : ($startX , $endX)');
-        // if (startX >= 0 && endX <= 102) {
-        //   obstruct['left'].add(result[i]['tag']);
-        // } else if (startX >= 255 && endX <= 357) {
-        //   obstruct['right'].add(result[i]['tag']);
-        // } else {
-        //   obstruct['middle'].add(result[i]['tag']);
-        // }
         double startX = result[i]["box"][0];
         double endX = result[i]["box"][2];
         log('${result[i]['tag']} : ($startX , $endX)');
