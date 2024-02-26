@@ -1,4 +1,5 @@
 import 'dart:developer' as dev;
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -57,26 +58,28 @@ class _SpeechScreenState extends State<SpeechScreen>
   void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
     if (lifecycleState == AppLifecycleState.inactive) {
       floating.enable(aspectRatio: const Rational.square());
+      dev.log('lifecycleState == AppLifecycleState.inactive');
     }
+    dev.log('didChangeAppLifecycleState');
   }
 
-  Future<void> enablePip(BuildContext context) async {
+  Future<void> enablePip() async {
     const rational = Rational.vertical();
-    final screenSize =
-        MediaQuery.of(context).size * MediaQuery.of(context).devicePixelRatio;
-    final height = screenSize.width ~/ rational.aspectRatio;
+    FlutterView view = WidgetsBinding.instance.platformDispatcher.views.first;
+    Size size = view.physicalSize;
+    double width = size.width;
+    final height = width ~/ rational.aspectRatio;
 
     final status = await floating.enable(
       aspectRatio: rational,
       sourceRectHint: Rectangle<int>(
         0,
-        (screenSize.height ~/ 2) - (height ~/ 2),
-        screenSize.width.toInt(),
+        (height ~/ 2) - (height ~/ 2),
+        width.toInt(),
         height,
       ),
     );
-    debugPrint('PiP enabled? $status');
-    
+    dev.log('PiP enabled? $status');
   }
 
   void _initSpeech() async {
@@ -101,6 +104,7 @@ class _SpeechScreenState extends State<SpeechScreen>
     var destination = await collection.findOne({'name': _speechWord});
     if (destination != null) {
       TextToSpeech().speak('กำลังเปิดการนำทาง');
+      enablePip();
       await launchUrl(Uri.parse(
           'https://www.google.com/maps/dir/?api=1&destination=${destination['lat']},${destination['lng']}&travelmode=walking'));
     }
@@ -191,61 +195,8 @@ class _SpeechScreenState extends State<SpeechScreen>
             ),
           ),
         ),
-        //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        // floatingActionButton: FutureBuilder<bool>(
-        //   future: floating.isPipAvailable,
-        //   initialData: false,
-        //   builder: (context, snapshot) => snapshot.data ?? false
-        //       ? FloatingActionButton.extended(
-        //           onPressed: () => enablePip(context),
-        //           label: const Text('Enable PiP'),
-        //           icon: const Icon(Icons.picture_in_picture),
-        //         )
-        //       : const Card(
-        //           child: Text('PiP unavailable'),
-        //         ),
-        // ),
       ),
       childWhenEnabled: YoloVideo(vision: vision),
     );
-    // return Scaffold(
-    //   appBar: AppBar(),
-    //   body: GestureDetector(
-    //     behavior: HitTestBehavior.opaque,
-    //     onTap: () => {
-    //       if (initSpeech) {if (_speechToText.isNotListening) _startListening()}
-    //     },
-    //     child: Center(
-    //       child: Column(
-    //         mainAxisAlignment: MainAxisAlignment.center,
-    //         children: <Widget>[
-    //           Container(
-    //             padding: const EdgeInsets.all(16),
-    //             child: const Text(
-    //               'กำลังฟังชื่อสถานที่:',
-    //               style: TextStyle(fontSize: 20.0),
-    //             ),
-    //           ),
-    //           Expanded(
-    //             child: Container(
-    //               padding: const EdgeInsets.all(16),
-    //               child: Text(
-    //                 _speechWord,
-    //               ),
-    //             ),
-    //           ),
-    //           Expanded(
-    //             child: Container(
-    //               padding: const EdgeInsets.all(16),
-    //               child: Text(
-    //                 _speechToText.isNotListening.toString(),
-    //               ),
-    //             ),
-    //           ),
-    //         ],
-    //       ),
-    //     ),
-    //   ),
-    // );
   }
 }
