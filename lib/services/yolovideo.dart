@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:camera/camera.dart';
 
@@ -53,8 +54,8 @@ class _YoloVideoState extends State<YoloVideo> {
 
   @override
   void dispose() async {
-    // stopDetection();
-    // controller.dispose();
+    stopDetection();
+    controller.dispose();
     super.dispose();
   }
 
@@ -78,7 +79,6 @@ class _YoloVideoState extends State<YoloVideo> {
           ),
         ),
         ...displayBoxesAroundRecognizedObjects(size),
-      
       ],
     );
   }
@@ -90,18 +90,54 @@ class _YoloVideoState extends State<YoloVideo> {
         modelVersion: "yolov8",
         numThreads: 2,
         useGpu: false);
-
   }
 
   Future<void> yoloOnFrame(CameraImage cameraImage) async {
+    FlutterView view = WidgetsBinding.instance.platformDispatcher.views.first;
+    Size size = view.physicalSize;
+    double _width = size.width;
+    double _height = size.height;
+
     final result = await widget.vision.yoloOnFrame(
         bytesList: cameraImage.planes.map((plane) => plane.bytes).toList(),
         imageHeight: cameraImage.height,
         imageWidth: cameraImage.width,
         iouThreshold: 0.4,
         confThreshold: 0.6,
-        classThreshold: 0.6);
+        classThreshold: 0.75);
     if (result.isNotEmpty) {
+      Map<String, dynamic> obstruct = {'left': [], 'middle': [], 'right': []};
+      // double factorX = _width / (cameraImage.height ?? 1);
+      // double factorY = _height / (cameraImage.width ?? 1);
+
+      for (var i = 0; i < result.length; i++) {
+        // double startX = result[i]["box"][0] * factorX;
+        // double endX = result[i]["box"][2] * factorX;
+
+        // log('$_width , $_height');
+        // log(result[i]["box"].toString());
+        // log('${result[i]['tag']} : ($startX , $endX)');
+        // if (startX >= 0 && endX <= 102) {
+        //   obstruct['left'].add(result[i]['tag']);
+        // } else if (startX >= 255 && endX <= 357) {
+        //   obstruct['right'].add(result[i]['tag']);
+        // } else {
+        //   obstruct['middle'].add(result[i]['tag']);
+        // }
+         double startX = result[i]["box"][0];
+         double endX = result[i]["box"][2];
+         log('${result[i]['tag']} : ($startX , $endX)');
+        if (startX >= 0 && endX <= 155) {
+          obstruct['left'].add(result[i]['tag']);
+        } else if (startX >= 325 && endX <= 480) {
+          obstruct['right'].add(result[i]['tag']);
+        } else {
+          obstruct['middle'].add(result[i]['tag']);
+        }
+      }
+      for (var k in obstruct.keys) {
+        log('$k : ${obstruct[k].toString()}');
+      }
       setState(() {
         yoloResults = result;
       });
@@ -118,12 +154,14 @@ class _YoloVideoState extends State<YoloVideo> {
     }
 
     Timer.periodic(const Duration(seconds: 5), (timer) {
-      log('interval');
       if (isDetecting) {
         Timer(const Duration(milliseconds: 2000), () {
           startStream();
           Timer(const Duration(milliseconds: 1000), () {
             stopStream();
+            if (yoloResults.isNotEmpty) {
+              yoloResults.clear();
+            }
           });
         });
       } else {
@@ -135,7 +173,6 @@ class _YoloVideoState extends State<YoloVideo> {
   Future<void> startStream() async {
     await controller.startImageStream((image) {
       if (isDetecting) {
-        log('Start image stream');
         cameraImage = image;
         yoloOnFrame(image);
       }
@@ -144,26 +181,16 @@ class _YoloVideoState extends State<YoloVideo> {
 
   void stopStream() {
     if (controller.value.isStreamingImages) {
-      log('Stopping image stream');
       controller.stopImageStream();
     }
   }
 
   Future<void> stopDetection() async {
-    setState(() {
-      isDetecting = false;
+    isDetecting = false;
+    if(yoloResults.isNotEmpty){
       yoloResults.clear();
-    });
-  }
-
-  void getOject() async {
-    List<String> objects = [];
-    yoloResults.map((result) {
-      objects.add(result['tag']);
-    });
-    if (objects.isNotEmpty) {
-      TextToSpeech().speak(objects[0]);
     }
+    
   }
 
   List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
@@ -171,9 +198,8 @@ class _YoloVideoState extends State<YoloVideo> {
     double factorX = screen.width / (cameraImage?.height ?? 1);
     double factorY = screen.height / (cameraImage?.width ?? 1);
     Color colorPick = const Color.fromARGB(255, 50, 233, 30);
-    // getOject();
+
     return yoloResults.map((result) {
-      log(result['tag']);
       return Positioned(
         left: result["box"][0] * factorX,
         top: result["box"][1] * factorY,
@@ -189,7 +215,7 @@ class _YoloVideoState extends State<YoloVideo> {
             style: TextStyle(
               background: Paint()..color = colorPick,
               color: Colors.white,
-              fontSize: 18.0,
+              fontSize: 7.0,
             ),
           ),
         ),
