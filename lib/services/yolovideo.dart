@@ -24,7 +24,7 @@ class _YoloVideoState extends State<YoloVideo> {
   CameraImage? cameraImage;
 
   //YOLO
-  late List<Map<String, dynamic>> yoloResults;
+  //late List<Map<String, dynamic>> yoloResults;
   bool isLoaded = false;
   bool isDetecting = false;
   static const String _modelPath = 'assets/yolov8n_float32.tflite';
@@ -45,7 +45,7 @@ class _YoloVideoState extends State<YoloVideo> {
         setState(() {
           isLoaded = true;
           isDetecting = false;
-          yoloResults = [];
+         // yoloResults = [];
           WidgetsBinding.instance.addPostFrameCallback((_) => startDetection());
         });
       });
@@ -54,9 +54,10 @@ class _YoloVideoState extends State<YoloVideo> {
 
   @override
   void dispose() async {
+    
+    super.dispose();
     stopDetection();
     controller.dispose();
-    super.dispose();
   }
 
   @override
@@ -78,7 +79,6 @@ class _YoloVideoState extends State<YoloVideo> {
             controller,
           ),
         ),
-        ...displayBoxesAroundRecognizedObjects(size),
       ],
     );
   }
@@ -93,7 +93,6 @@ class _YoloVideoState extends State<YoloVideo> {
   }
 
   Future<void> yoloOnFrame(CameraImage cameraImage) async {
-
     final result = await widget.vision.yoloOnFrame(
         bytesList: cameraImage.planes.map((plane) => plane.bytes).toList(),
         imageHeight: cameraImage.height,
@@ -107,27 +106,28 @@ class _YoloVideoState extends State<YoloVideo> {
         'ด้านหน้า': {},
         'ด้านขวา': {}
       };
-    
-      for (var i = 0; i < result.length; i++) {
+      String stringBuild = "";
 
+      for (var i = 0; i < result.length; i++) {
         double startX = result[i]["box"][0];
         double endX = result[i]["box"][2];
         log('${result[i]['tag']} : ($startX , $endX)');
         if (startX >= 0 && endX <= 155) {
-          obstruct['left']!.add(result[i]['tag']);
+          obstruct['ด้านซ้าย']!.add(result[i]['tag']);
         } else if (startX >= 325 && endX <= 480) {
-          obstruct['right']!.add(result[i]['tag']);
+          obstruct['ด้านขวา']!.add(result[i]['tag']);
         } else {
-          obstruct['middle']!.add(result[i]['tag']);
+          obstruct['ด้านหน้า']!.add(result[i]['tag']);
         }
       }
       for (var k in obstruct.keys) {
         log('$k : ${obstruct[k].toString()}');
-        TextToSpeech().speak('$k มี ${obstruct[k].toString()}');
+        if (obstruct[k]!.isNotEmpty) {
+          stringBuild += '$k มี ${obstruct[k].toString()}';
+        }
+        
       }
-      setState(() {
-        yoloResults = result;
-      });
+      TextToSpeech().speak(stringBuild);
     }
   }
 
@@ -146,9 +146,6 @@ class _YoloVideoState extends State<YoloVideo> {
           startStream();
           Timer(const Duration(milliseconds: 1000), () {
             stopStream();
-            if (yoloResults.isNotEmpty) {
-              yoloResults.clear();
-            }
           });
         });
       } else {
@@ -174,38 +171,5 @@ class _YoloVideoState extends State<YoloVideo> {
 
   Future<void> stopDetection() async {
     isDetecting = false;
-    if (yoloResults.isNotEmpty) {
-      yoloResults.clear();
-    }
-  }
-
-  List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
-    if (yoloResults.isEmpty) return [];
-    double factorX = screen.width / (cameraImage?.height ?? 1);
-    double factorY = screen.height / (cameraImage?.width ?? 1);
-    Color colorPick = const Color.fromARGB(255, 50, 233, 30);
-
-    return yoloResults.map((result) {
-      return Positioned(
-        left: result["box"][0] * factorX,
-        top: result["box"][1] * factorY,
-        width: (result["box"][2] - result["box"][0]) * factorX,
-        height: (result["box"][3] - result["box"][1]) * factorY,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-            border: Border.all(color: Colors.pink, width: 2.0),
-          ),
-          child: Text(
-            "${result['tag']} ${(result['box'][4] * 100).toStringAsFixed(0)}%",
-            style: TextStyle(
-              background: Paint()..color = colorPick,
-              color: Colors.white,
-              fontSize: 7.0,
-            ),
-          ),
-        ),
-      );
-    }).toList();
   }
 }
