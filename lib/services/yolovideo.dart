@@ -106,7 +106,11 @@ class _YoloVideoState extends State<YoloVideo> {
         confThreshold: 0.6,
         classThreshold: 0.75);
     if (result.isNotEmpty) {
-      Map<String, dynamic> obstruct = {'left': [], 'middle': [], 'right': []};
+      Map<String, Set<String>> obstruct = {
+        'ด้านซ้าย': {},
+        'ด้านหน้า': {},
+        'ด้านขวา': {}
+      };
       // double factorX = _width / (cameraImage.height ?? 1);
       // double factorY = _height / (cameraImage.width ?? 1);
 
@@ -124,19 +128,20 @@ class _YoloVideoState extends State<YoloVideo> {
         // } else {
         //   obstruct['middle'].add(result[i]['tag']);
         // }
-         double startX = result[i]["box"][0];
-         double endX = result[i]["box"][2];
-         log('${result[i]['tag']} : ($startX , $endX)');
+        double startX = result[i]["box"][0];
+        double endX = result[i]["box"][2];
+        log('${result[i]['tag']} : ($startX , $endX)');
         if (startX >= 0 && endX <= 155) {
-          obstruct['left'].add(result[i]['tag']);
+          obstruct['left']!.add(result[i]['tag']);
         } else if (startX >= 325 && endX <= 480) {
-          obstruct['right'].add(result[i]['tag']);
+          obstruct['right']!.add(result[i]['tag']);
         } else {
-          obstruct['middle'].add(result[i]['tag']);
+          obstruct['middle']!.add(result[i]['tag']);
         }
       }
       for (var k in obstruct.keys) {
         log('$k : ${obstruct[k].toString()}');
+        TextToSpeech().speak('$k มี ${obstruct[k].toString()}');
       }
       setState(() {
         yoloResults = result;
@@ -187,10 +192,9 @@ class _YoloVideoState extends State<YoloVideo> {
 
   Future<void> stopDetection() async {
     isDetecting = false;
-    if(yoloResults.isNotEmpty){
+    if (yoloResults.isNotEmpty) {
       yoloResults.clear();
     }
-    
   }
 
   List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
