@@ -33,7 +33,7 @@ class _UploadImageState extends State<UploadImage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('TaDee'),
+          title: const Text('ตาดี'),
         ),
         body: isConnecting
             ? const Center(
@@ -77,7 +77,7 @@ class _UploadImageState extends State<UploadImage> {
                         ),
                         ElevatedButton(
                           onPressed: () async {
-                            if (_formKey.currentState!.validate() ||
+                            if (_formKey.currentState!.validate() &&
                                 mediaFile != null) {
                               upload();
                               Navigator.pushReplacement(
@@ -95,7 +95,7 @@ class _UploadImageState extends State<UploadImage> {
                               );
                             }
                           },
-                          child: const Text('Submit'),
+                          child: const Text('ยืนยัน'),
                         ),
                       ]),
                     ))));
@@ -120,6 +120,11 @@ class _UploadImageState extends State<UploadImage> {
   }
 
   void upload() async {
+    
+    try {
+      if(mediaFile!=null){
+      
+    }
     final bytes = await File(mediaFile!.path).readAsBytes();
 
     Map<String, dynamic> image = {
@@ -128,7 +133,6 @@ class _UploadImageState extends State<UploadImage> {
       "lng": currentLocation!.longitude,
       "data": base64Encode(bytes)
     };
-    try {
       await bucket.chunks.insert(image);
     } catch (e) {
       log(e.toString());
@@ -184,7 +188,7 @@ class _UploadImageState extends State<UploadImage> {
       );
     } else {
       return const Text(
-        'You have not yet picked an image.',
+        'กรุณาถ่ายภาพ',
         textAlign: TextAlign.center,
       );
     }
