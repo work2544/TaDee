@@ -17,7 +17,7 @@ class YoloVideo extends StatefulWidget {
   State<YoloVideo> createState() => _YoloVideoState();
 }
 
-class _YoloVideoState extends State<YoloVideo> {
+class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   //Camera
   late List<CameraDescription> cameras;
   late CameraController controller;
@@ -30,9 +30,12 @@ class _YoloVideoState extends State<YoloVideo> {
   static const String _modelPath = 'assets/yolov8n_float32.tflite';
   static const String _labelPath = 'assets/yolov8n_float32_labels.txt';
 
+  Timer? _timer;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsFlutterBinding.ensureInitialized();
     init();
   }
@@ -45,7 +48,6 @@ class _YoloVideoState extends State<YoloVideo> {
         setState(() {
           isLoaded = true;
           isDetecting = false;
-         // yoloResults = [];
           WidgetsBinding.instance.addPostFrameCallback((_) => startDetection());
         });
       });
@@ -54,15 +56,15 @@ class _YoloVideoState extends State<YoloVideo> {
 
   @override
   void dispose() async {
-    
     super.dispose();
     stopDetection();
+    _timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
     if (!isLoaded) {
       return const Scaffold(
         body: Center(
@@ -97,7 +99,7 @@ class _YoloVideoState extends State<YoloVideo> {
         bytesList: cameraImage.planes.map((plane) => plane.bytes).toList(),
         imageHeight: cameraImage.height,
         imageWidth: cameraImage.width,
-        iouThreshold: 0.4,
+        iouThreshold: 0.5,
         confThreshold: 0.6,
         classThreshold: 0.75);
     if (result.isNotEmpty) {
@@ -111,7 +113,7 @@ class _YoloVideoState extends State<YoloVideo> {
       for (var i = 0; i < result.length; i++) {
         double startX = result[i]["box"][0];
         double endX = result[i]["box"][2];
-        log('${result[i]['tag']} : ($startX , $endX)');
+        // log('${result[i]['tag']} : ($startX , $endX)');
         if (startX >= 0 && endX <= 155) {
           obstruct['ด้านซ้าย']!.add(result[i]['tag']);
         } else if (startX >= 325 && endX <= 480) {
@@ -125,7 +127,6 @@ class _YoloVideoState extends State<YoloVideo> {
         if (obstruct[k]!.isNotEmpty) {
           stringBuild += '$k มี ${obstruct[k].toString()}';
         }
-        
       }
       TextToSpeech().speak(stringBuild);
     }
@@ -140,9 +141,9 @@ class _YoloVideoState extends State<YoloVideo> {
       return;
     }
 
-    Timer.periodic(const Duration(seconds: 5), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (isDetecting) {
-        Timer(const Duration(milliseconds: 2000), () {
+        Timer(const Duration(milliseconds: 1000), () {
           startStream();
           Timer(const Duration(milliseconds: 1000), () {
             stopStream();

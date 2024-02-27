@@ -1,12 +1,13 @@
 import 'dart:developer' as dev;
+import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:mongo_dart/mongo_dart.dart' show Db, DbCollection;
+import 'package:tadeeflutter/uploadimage.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'services/texttospeech.dart';
-import 'dart:math';
 import 'package:flutter_vision/flutter_vision.dart';
 import 'package:tadeeflutter/services/yolovideo.dart';
 import 'package:floating/floating.dart';
@@ -29,8 +30,6 @@ class _SpeechScreenState extends State<SpeechScreen>
   late DbCollection collection;
   static Db? db;
   bool isConnecting = true;
-
-  TextToSpeech customTTs = TextToSpeech();
 
   late FlutterVision vision;
   final floating = Floating();
@@ -56,30 +55,21 @@ class _SpeechScreenState extends State<SpeechScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
-    if (lifecycleState == AppLifecycleState.inactive) {
-      floating.enable(aspectRatio: const Rational.square());
-      dev.log('lifecycleState == AppLifecycleState.inactive');
-    }
-    dev.log('didChangeAppLifecycleState');
-  }
-
-  Future<void> enablePip() async {
     const rational = Rational.vertical();
-    FlutterView view = WidgetsBinding.instance.platformDispatcher.views.first;
-    Size size = view.physicalSize;
-    double width = size.width;
-    final height = width ~/ rational.aspectRatio;
-
-    final status = await floating.enable(
-      aspectRatio: rational,
-      sourceRectHint: Rectangle<int>(
-        0,
-        (height ~/ 2) - (height ~/ 2),
-        width.toInt(),
-        height,
-      ),
-    );
-    dev.log('PiP enabled? $status');
+    final screenSize =
+        MediaQuery.of(context).size * MediaQuery.of(context).devicePixelRatio;
+    final height = screenSize.width ~/ rational.aspectRatio;
+    if (lifecycleState == AppLifecycleState.inactive) {
+      floating.enable(
+        aspectRatio: rational,
+        sourceRectHint: Rectangle<int>(
+          0,
+          (screenSize.height ~/ 2) - (height ~/ 2),
+          screenSize.width.toInt(),
+          height,
+        ),
+      );
+    }
   }
 
   void _initSpeech() async {
@@ -103,17 +93,13 @@ class _SpeechScreenState extends State<SpeechScreen>
     await _speechToText.stop();
     var destination = await collection.findOne({'name': _speechWord});
     if (destination != null) {
-      TextToSpeech().speak('กำลังเปิดการนำทาง');
-      enablePip();
+      TextToSpeech().speak('กำลังเปิดการนำทางไปที่ :${destination['name']}');
       await launchUrl(Uri.parse(
           'https://www.google.com/maps/dir/?api=1&destination=${destination['lat']},${destination['lng']}&travelmode=walking'));
     }
     setState(() {
       onSpeech = false;
-      if (destination != null) {
-        dev.log(
-            'destination ${destination['name']} ${destination['lat']} ${destination['lng']}');
-      } else {
+      if (destination == null) {
         TextToSpeech().speak('ฉันไม่รู้จักสถานที่นี้');
       }
     });
@@ -137,7 +123,7 @@ class _SpeechScreenState extends State<SpeechScreen>
         collection = db!.collection('TaDee.chunks');
         _initSpeech();
         setState(() {
-          TextToSpeech().speak('กรุณาแตะหน้าจอแล้วพูดชื่อสถานที่');
+          TextToSpeech().speak('กรุณาแตะกลางหน้าจอแล้วพูดชื่อสถานที่');
           isConnecting = false;
         });
       } catch (e) {
@@ -182,17 +168,20 @@ class _SpeechScreenState extends State<SpeechScreen>
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        _speechToText.isNotListening.toString(),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: const Color.fromARGB(255, 15, 2, 131),
+            tooltip: 'เพิ่มสถานที่',
+            onPressed: () {
+              Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const UploadImage()));
+            },
+            child: const Icon(Icons.camera_alt_outlined,
+                color: Colors.white, size: 28),
           ),
         ),
       ),

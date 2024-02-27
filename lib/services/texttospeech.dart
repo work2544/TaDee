@@ -7,7 +7,7 @@ class TextToSpeech {
   //TTS
   final double volume = 1;
   final double pitch = 1.0;
-  final double rate = 0.5;
+  final double rate = 0.7;
   final String language = 'th-TH';
   final String engine = 'com.google.android.tts';
   late FlutterTts flutterTts;
