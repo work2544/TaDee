@@ -11,7 +11,8 @@ import 'package:tadeeflutter/services/texttospeech.dart';
 
 class YoloVideo extends StatefulWidget {
   final FlutterVision vision;
-  const YoloVideo({super.key, required this.vision});
+  final int intputduration;
+  const YoloVideo({super.key, required this.vision,required this.intputduration});
 
   @override
   State<YoloVideo> createState() => _YoloVideoState();
@@ -113,7 +114,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
       for (var i = 0; i < result.length; i++) {
         double startX = result[i]["box"][0];
         double endX = result[i]["box"][2];
-        // log('${result[i]['tag']} : ($startX , $endX)');
+      
         if (startX >= 0 && endX <= 155) {
           obstruct['ด้านซ้าย']!.add(result[i]['tag']);
         } else if (startX >= 325 && endX <= 480) {
@@ -141,7 +142,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
       return;
     }
 
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _timer = Timer.periodic(Duration(seconds: widget.intputduration), (timer) {
       if (isDetecting) {
         Timer(const Duration(milliseconds: 1000), () {
           startStream();

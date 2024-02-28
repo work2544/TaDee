@@ -1,6 +1,5 @@
 import 'dart:developer' as dev;
 import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -33,6 +32,7 @@ class _SpeechScreenState extends State<SpeechScreen>
 
   late FlutterVision vision;
   final floating = Floating();
+  final myController = TextEditingController(text: '5');
 
   @override
   void initState() {
@@ -50,6 +50,7 @@ class _SpeechScreenState extends State<SpeechScreen>
     TextToSpeech().stop();
     WidgetsBinding.instance.removeObserver(this);
     floating.dispose();
+    myController.dispose();
     await vision.closeYoloModel();
   }
 
@@ -61,15 +62,35 @@ class _SpeechScreenState extends State<SpeechScreen>
     final height = screenSize.width ~/ rational.aspectRatio;
     if (lifecycleState == AppLifecycleState.inactive) {
       floating.enable(
-        aspectRatio: rational,
+        //aspectRatio: const Rational.vertical(),
         sourceRectHint: Rectangle<int>(
           0,
-          (screenSize.height ~/ 2) - (height ~/ 2),
+          0,
           screenSize.width.toInt(),
           height,
         ),
       );
     }
+  }
+
+  Future<void> enablePip() async {
+    Size screenSize =
+        WidgetsBinding.instance.platformDispatcher.views.first.physicalSize;
+
+    const rational = Rational.vertical();
+
+    final height = screenSize.width ~/ rational.aspectRatio;
+
+    final status = await floating.enable(
+      //aspectRatio: rational,
+      sourceRectHint: Rectangle<int>(
+        0,
+        (screenSize.height ~/ 2) - (height ~/ 2),
+        screenSize.width.toInt(),
+        height,
+      ),
+    );
+    debugPrint('PiP enabled? $status');
   }
 
   void _initSpeech() async {
@@ -94,6 +115,7 @@ class _SpeechScreenState extends State<SpeechScreen>
     var destination = await collection.findOne({'name': _speechWord});
     if (destination != null) {
       TextToSpeech().speak('กำลังเปิดการนำทางไปที่ :${destination['name']}');
+      enablePip();
       await launchUrl(Uri.parse(
           'https://www.google.com/maps/dir/?api=1&destination=${destination['lat']},${destination['lng']}&travelmode=walking'));
     }
@@ -153,6 +175,13 @@ class _SpeechScreenState extends State<SpeechScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
+                  TextField(
+                    controller: myController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter a time duration',
+                    ),
+                  ),
                   Container(
                     padding: const EdgeInsets.all(16),
                     child: const Text(
@@ -185,7 +214,10 @@ class _SpeechScreenState extends State<SpeechScreen>
           ),
         ),
       ),
-      childWhenEnabled: YoloVideo(vision: vision),
+      childWhenEnabled: YoloVideo(
+        vision: vision,
+        intputduration: int.parse(myController.text),
+      ),
     );
   }
 }
