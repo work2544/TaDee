@@ -12,7 +12,8 @@ import 'package:tadeeflutter/services/texttospeech.dart';
 class YoloVideo extends StatefulWidget {
   final FlutterVision vision;
   final int intputduration;
-  const YoloVideo({super.key, required this.vision,required this.intputduration});
+  const YoloVideo(
+      {super.key, required this.vision, required this.intputduration});
 
   @override
   State<YoloVideo> createState() => _YoloVideoState();
@@ -25,12 +26,12 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   CameraImage? cameraImage;
 
   //YOLO
-  //late List<Map<String, dynamic>> yoloResults;
   bool isLoaded = false;
   bool isDetecting = false;
   static const String _modelPath = 'assets/yolov8n_float32.tflite';
+  static const String _modellocationPath = 'assets/location_float32.tflite';
   static const String _labelPath = 'assets/yolov8n_float32_labels.txt';
-
+  static const String _locationlabelPath = 'assets/location.txt';
   Timer? _timer;
 
   @override
@@ -102,7 +103,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
         imageWidth: cameraImage.width,
         iouThreshold: 0.5,
         confThreshold: 0.6,
-        classThreshold: 0.75);
+        classThreshold: 0.7);
     if (result.isNotEmpty) {
       Map<String, Set<String>> obstruct = {
         'ด้านซ้าย': {},
@@ -114,7 +115,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
       for (var i = 0; i < result.length; i++) {
         double startX = result[i]["box"][0];
         double endX = result[i]["box"][2];
-      
+
         if (startX >= 0 && endX <= 155) {
           obstruct['ด้านซ้าย']!.add(result[i]['tag']);
         } else if (startX >= 325 && endX <= 480) {
