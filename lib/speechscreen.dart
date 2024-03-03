@@ -10,6 +10,7 @@ import 'services/texttospeech.dart';
 import 'package:flutter_vision/flutter_vision.dart';
 import 'package:tadeeflutter/services/yolovideo.dart';
 import 'package:floating/floating.dart';
+import 'package:string_similarity/string_similarity.dart';
 
 class SpeechScreen extends StatefulWidget {
   const SpeechScreen({super.key});
@@ -54,43 +55,10 @@ class _SpeechScreenState extends State<SpeechScreen>
     await vision.closeYoloModel();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState lifecycleState) {
-    const rational = Rational.vertical();
-    final screenSize =
-        MediaQuery.of(context).size * MediaQuery.of(context).devicePixelRatio;
-    final height = screenSize.width ~/ rational.aspectRatio;
-    if (lifecycleState == AppLifecycleState.inactive) {
-      floating.enable(
-        //aspectRatio: const Rational.vertical(),
-        sourceRectHint: Rectangle<int>(
-          0,
-          0,
-          screenSize.width.toInt(),
-          height,
-        ),
-      );
-    }
-  }
-
   Future<void> enablePip() async {
-    Size screenSize =
-        WidgetsBinding.instance.platformDispatcher.views.first.physicalSize;
-
-    const rational = Rational.vertical();
-
-    final height = screenSize.width ~/ rational.aspectRatio;
-
-    final status = await floating.enable(
-      //aspectRatio: rational,
-      sourceRectHint: Rectangle<int>(
-        0,
-        (screenSize.height ~/ 2) - (height ~/ 2),
-        screenSize.width.toInt(),
-        height,
-      ),
+    floating.enable(
+      aspectRatio: const Rational.vertical(),
     );
-    debugPrint('PiP enabled? $status');
   }
 
   void _initSpeech() async {
@@ -110,10 +78,26 @@ class _SpeechScreenState extends State<SpeechScreen>
     });
   }
 
+  Future<T?> cast<T>(x) async {
+    if (x is T) {
+      return x;
+    } else {
+      return null;
+    }
+  }
+
   void _stopListening() async {
     await _speechToText.stop();
-    var destination = await collection.findOne({'name': _speechWord});
-    if (destination != null) {
+
+    final collectionLocation = await collection.distinct('name');
+    List<String> allLocation = [];
+    for (var x in collectionLocation.values.first) {
+      allLocation.add(x as String);
+    }
+
+    var matches = _speechWord.bestMatch(allLocation);
+    var destination = await collection.findOne({'name': matches.bestMatch.target});
+    if (destination != null && matches.bestMatch.rating! >=0.7 ) {
       TextToSpeech().speak('กำลังเปิดการนำทางไปที่ :${destination['name']}');
       enablePip();
       await launchUrl(Uri.parse(
@@ -184,10 +168,15 @@ class _SpeechScreenState extends State<SpeechScreen>
                   ),
                   Container(
                     padding: const EdgeInsets.all(16),
-                    child: const Text(
-                      'กำลังฟังชื่อสถานที่:',
-                      style: TextStyle(fontSize: 20.0),
-                    ),
+                    child: _speechToText.isNotListening
+                        ? const Text(
+                            'แตะกลางเจอเพื่อพูด:',
+                            style: TextStyle(fontSize: 20.0),
+                          )
+                        : const Text(
+                            'กำลังฟังชื่อสถานที่:',
+                            style: TextStyle(fontSize: 20.0),
+                          ),
                   ),
                   Expanded(
                     child: Container(
@@ -209,7 +198,7 @@ class _SpeechScreenState extends State<SpeechScreen>
               Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) => const UploadImage()));
             },
-            child: const Icon(Icons.camera_alt_outlined,
+            child: const Icon(Icons.add_a_photo_outlined,
                 color: Colors.white, size: 28),
           ),
         ),

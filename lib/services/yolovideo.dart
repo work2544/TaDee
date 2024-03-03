@@ -28,9 +28,9 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   //YOLO
   bool isLoaded = false;
   bool isDetecting = false;
-  static const String _modelPath = 'assets/yolov8n_float32.tflite';
+  //static const String _modelPath = 'assets/yolov8n_float32.tflite';
+  //static const String _labelPath = 'assets/yolov8n_float32_labels.txt';
   static const String _modellocationPath = 'assets/location_float32.tflite';
-  static const String _labelPath = 'assets/yolov8n_float32_labels.txt';
   static const String _locationlabelPath = 'assets/location.txt';
   Timer? _timer;
 
@@ -89,8 +89,10 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
 
   Future<void> loadYoloModel() async {
     await widget.vision.loadYoloModel(
-        labels: _labelPath,
-        modelPath: _modelPath,
+        // labels: _labelPath,
+        // modelPath: _modelPath,
+        labels: _locationlabelPath,
+        modelPath: _modellocationPath,
         modelVersion: "yolov8",
         numThreads: 2,
         useGpu: false);
@@ -129,6 +131,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
         if (obstruct[k]!.isNotEmpty) {
           stringBuild += '$k มี ${obstruct[k].toString()}';
         }
+      result.clear();
       }
       TextToSpeech().speak(stringBuild);
     }

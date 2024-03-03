@@ -52,6 +52,7 @@ dependencies:
   flutter_in_app_pip: ^1.7.3
   floating: ^2.0.1
   wakelock_plus: ^1.1.4
+  string_similarity: ^2.0.0
   
 
 dev_dependencies:
