@@ -32,6 +32,8 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   static const String _locationlabelPath = 'assets/location.txt';
   Timer? _timer;
 
+  late List<Map<String, dynamic>> yoloResults;
+
   @override
   void initState() {
     super.initState();
@@ -48,6 +50,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
         setState(() {
           isLoaded = true;
           isDetecting = false;
+          yoloResults = [];
           WidgetsBinding.instance.addPostFrameCallback((_) => startDetection());
         });
       });
@@ -65,6 +68,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final Size size = MediaQuery.of(context).size;
     if (!isLoaded) {
       return const Scaffold(
         body: Center(
@@ -81,6 +85,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
             controller,
           ),
         ),
+        ...displayBoxesAroundRecognizedObjects(size)
       ],
     );
   }
@@ -93,7 +98,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
         modelPath: _modellocationPath,
         modelVersion: "yolov8",
         numThreads: 2,
-        useGpu: false);
+        useGpu: true);
   }
 
   Future<void> yoloOnFrame(CameraImage cameraImage) async {
@@ -129,9 +134,12 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
         if (obstruct[k]!.isNotEmpty) {
           stringBuild += '$k มี ${obstruct[k].toString()}';
         }
-      result.clear();
+        result.clear();
       }
       TextToSpeech().speak(stringBuild);
+      setState(() {
+        yoloResults = result;
+      });
     }
   }
 
@@ -175,5 +183,37 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
 
   Future<void> stopDetection() async {
     isDetecting = false;
+    yoloResults.clear();
+  }
+
+  List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
+    if (yoloResults.isEmpty) return [];
+    double factorX = screen.width / (cameraImage?.height ?? 1);
+    double factorY = screen.height / (cameraImage?.width ?? 1);
+
+    Color colorPick = const Color.fromARGB(255, 50, 233, 30);
+
+    return yoloResults.map((result) {
+      return Positioned(
+        left: result["box"][0] * factorX,
+        top: result["box"][1] * factorY,
+        width: (result["box"][2] - result["box"][0]) * factorX,
+        height: (result["box"][3] - result["box"][1]) * factorY,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+            border: Border.all(color: Colors.pink, width: 2.0),
+          ),
+          child: Text(
+            "${result['tag']} ${(result['box'][4] * 100).toStringAsFixed(0)}%",
+            style: TextStyle(
+              background: Paint()..color = colorPick,
+              color: Colors.white,
+              fontSize: 18.0,
+            ),
+          ),
+        ),
+      );
+    }).toList();
   }
 }
