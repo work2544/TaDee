@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:mongo_dart/mongo_dart.dart' show Db, GridFS;
+import 'package:flutter/services.dart' show rootBundle;
 
 class UploadImage extends StatefulWidget {
   const UploadImage({super.key});
@@ -28,6 +29,21 @@ class _UploadImageState extends State<UploadImage> {
 
   static Db? db;
   late GridFS bucket;
+
+  late List<String> allLocation;
+
+  Future<String> loadLocation() async {
+    return await rootBundle.loadString('assets/new_location_labels.txt');
+  }
+
+  Future<void> readLocation() async {
+    String file = await loadLocation();
+
+    List<String> lines = file.split('\n');
+    setState(() {
+      allLocation = lines;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,18 +78,19 @@ class _UploadImageState extends State<UploadImage> {
                         const SizedBox(
                           height: 15.0,
                         ),
-                        TextFormField(
-                          decoration: const InputDecoration(
-                            icon: Icon(Icons.location_city_rounded),
-                            helperText: 'ระบุชื่อสถานที่',
-                          ),
+                        DropdownMenu(
+                          initialSelection: allLocation[0],
                           controller: _locationName,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'โปรดระบุชื่อสถานที่';
-                            }
-                            return null;
-                          },
+                          requestFocusOnTap: false,
+                          label: const Text('ระบุชื่อสถานที่'),
+                          dropdownMenuEntries: allLocation
+                              .map<DropdownMenuEntry<String>>(
+                                  (String location) {
+                            return DropdownMenuEntry<String>(
+                              value: location,
+                              label: location,
+                            );
+                          }).toList(),
                         ),
                         ElevatedButton(
                           onPressed: () async {
@@ -120,19 +137,16 @@ class _UploadImageState extends State<UploadImage> {
   }
 
   void upload() async {
-    
     try {
-      if(mediaFile!=null){
-      
-    }
-    final bytes = await File(mediaFile!.path).readAsBytes();
+      if (mediaFile != null) {}
+      final bytes = await File(mediaFile!.path).readAsBytes();
 
-    Map<String, dynamic> image = {
-      "name": _locationName.text.replaceAll(' ', ''),
-      "lat": currentLocation!.latitude,
-      "lng": currentLocation!.longitude,
-      "data": base64Encode(bytes)
-    };
+      Map<String, dynamic> image = {
+        "name": _locationName.text.replaceAll(' ', ''),
+        "lat": currentLocation!.latitude,
+        "lng": currentLocation!.longitude,
+        "data": base64Encode(bytes)
+      };
       await bucket.chunks.insert(image);
     } catch (e) {
       log(e.toString());
@@ -218,6 +232,7 @@ class _UploadImageState extends State<UploadImage> {
   @override
   void initState() {
     super.initState();
+    readLocation();
     connection();
   }
 

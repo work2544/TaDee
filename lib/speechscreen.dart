@@ -1,8 +1,5 @@
 import 'dart:developer' as dev;
-import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:mongo_dart/mongo_dart.dart' show Db, DbCollection;
@@ -13,8 +10,6 @@ import 'package:flutter_vision/flutter_vision.dart';
 import 'package:tadeeflutter/services/yolovideo.dart';
 import 'package:floating/floating.dart';
 import 'package:string_similarity/string_similarity.dart';
-import 'dart:io';
-import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -61,12 +56,12 @@ class _SpeechScreenState extends State<SpeechScreen>
     await vision.closeYoloModel();
   }
 
-  Future<String> loadAsset() async {
+  Future<String> loadLocation() async {
     return await rootBundle.loadString('assets/location.txt');
   }
 
   Future<List<String>> readLocation() async {
-    String file = await loadAsset();
+    String file = await loadLocation();
 
     try {
       List<String> lines = file.split('\n');
@@ -103,12 +98,7 @@ class _SpeechScreenState extends State<SpeechScreen>
   void _stopListening() async {
     await _speechToText.stop();
 
-    //final collectionLocation = await collection.distinct('name');
     List<String> allLocation = await readLocation();
-    // for (var x in collectionLocation.values.first) {
-    //   allLocation.add(x as String);
-    // }
-
     var matches = _speechWord.bestMatch(allLocation);
     var destination =
         await collection.findOne({'name': matches.bestMatch.target});
@@ -120,8 +110,10 @@ class _SpeechScreenState extends State<SpeechScreen>
     }
     setState(() {
       onSpeech = false;
+
       if (destination == null) {
         TextToSpeech().speak('ฉันไม่รู้จักสถานที่นี้');
+        _speechWord = '';
       }
     });
   }
@@ -170,44 +162,89 @@ class _SpeechScreenState extends State<SpeechScreen>
               if (initSpeech)
                 {if (_speechToText.isNotListening) _startListening()}
             },
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    child: _speechToText.isNotListening
-                        ? const Text(
-                            'แตะกลางเจอเพื่อพูด:',
-                            style: TextStyle(fontSize: 20.0),
-                          )
-                        : const Text(
-                            'กำลังฟังชื่อสถานที่:',
-                            style: TextStyle(fontSize: 20.0),
+            child: Column(
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Wrap(
+                      direction: Axis.vertical,
+                      spacing: 20,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15),
+                          child: FloatingActionButton(
+                            backgroundColor:
+                                const Color.fromARGB(255, 15, 2, 131),
+                            tooltip: 'เพิ่มสถานที่',
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => const UploadImage()));
+                            },
+                            child: const Icon(Icons.add_a_photo_outlined,
+                                color: Colors.white, size: 28),
                           ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        _speechWord,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15),
+                          child: FloatingActionButton(
+                            backgroundColor:
+                                const Color.fromARGB(255, 15, 2, 131),
+                            tooltip: 'ตรวจจับวัตถุ',
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => YoloVideo(
+                                  vision: vision,
+                                ),
+                              ));
+                            },
+                            child: const Icon(Icons.visibility,
+                                color: Colors.white, size: 28),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+                Expanded(
+                    flex: 0,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const SizedBox(
+                            height: 200,
+                          ),
+                          Expanded(
+                              child: Center(
+                            child: _speechToText.isNotListening ||
+                                    _speechWord == ''
+                                ? const Text(
+                                    'แตะกลางเจอเพื่อพูด',
+                                    style: TextStyle(fontSize: 20.0),
+                                    textAlign: TextAlign.center,
+                                  )
+                                : Expanded(
+                                    child: Container(
+                                      child: _speechWord == ''
+                                          ? const Text(
+                                              'กำลังฟังชื่อสถานที่...',
+                                              style: TextStyle(fontSize: 20.0),
+                                              textAlign: TextAlign.center,
+                                            )
+                                          : Text(
+                                              _speechWord,
+                                              style: const TextStyle(
+                                                  fontSize: 20.0),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                    ),
+                                  ),
+                          ))
+                        ]))
+              ],
             ),
-          ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: const Color.fromARGB(255, 15, 2, 131),
-            tooltip: 'เพิ่มสถานที่',
-            onPressed: () {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const UploadImage()));
-            },
-            child: const Icon(Icons.add_a_photo_outlined,
-                color: Colors.white, size: 28),
           ),
         ),
       ),

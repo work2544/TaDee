@@ -25,10 +25,10 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   //YOLO
   bool isLoaded = false;
   bool isDetecting = false;
-  // static const String _modelPath = 'assets/yolov8n_float32.tflite';
-  // static const String _labelPath = 'assets/yolov8n_float32_labels.txt';
-  static const String _modellocationPath = 'assets/location_float32.tflite';
-  static const String _locationlabelPath = 'assets/location.txt';
+  static const String _modelPath = 'assets/new_object_float32.tflite';
+  static const String _labelPath = 'assets/new_object_labels.txt';
+  // static const String _modellocationPath = 'assets/new_location_float32.tflite';
+  // static const String _locationlabelPath = 'assets/new_location_labels.txt';
   Timer? _timer;
 
   late List<Map<String, dynamic>> yoloResults;
@@ -91,10 +91,10 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
 
   Future<void> loadYoloModel() async {
     await widget.vision.loadYoloModel(
-        // labels: _labelPath,
-        // modelPath: _modelPath,
-        labels: _locationlabelPath,
-        modelPath: _modellocationPath,
+        labels: _labelPath,
+        modelPath: _modelPath,
+        // labels: _locationlabelPath,
+        // modelPath: _modellocationPath,
         modelVersion: "yolov8",
         numThreads: 2,
         useGpu: false);
@@ -167,14 +167,6 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
       }
     });
   }
-
-  // Future<void> stopDetection() async {
-  //   setState(() {
-  //     isDetecting = false;
-  //     yoloResults.clear();
-  //     controller.stopImageStream();
-  //   });
-  // }
 
   List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
     if (yoloResults.isEmpty) return [];
