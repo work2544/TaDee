@@ -1,5 +1,8 @@
 import 'dart:developer' as dev;
+import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:mongo_dart/mongo_dart.dart' show Db, DbCollection;
@@ -10,6 +13,10 @@ import 'package:flutter_vision/flutter_vision.dart';
 import 'package:tadeeflutter/services/yolovideo.dart';
 import 'package:floating/floating.dart';
 import 'package:string_similarity/string_similarity.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'dart:async';
+import 'package:flutter/services.dart' show rootBundle;
 
 class SpeechScreen extends StatefulWidget {
   const SpeechScreen({super.key});
@@ -32,7 +39,8 @@ class _SpeechScreenState extends State<SpeechScreen>
 
   late FlutterVision vision;
   final floating = Floating();
-  final myController = TextEditingController(text: '5');
+
+  late List<String> allLocation;
 
   @override
   void initState() {
@@ -50,13 +58,28 @@ class _SpeechScreenState extends State<SpeechScreen>
     TextToSpeech().stop();
     WidgetsBinding.instance.removeObserver(this);
     floating.dispose();
-    myController.dispose();
     await vision.closeYoloModel();
   }
 
+  Future<String> loadAsset() async {
+    return await rootBundle.loadString('assets/location.txt');
+  }
+
+  Future<List<String>> readLocation() async {
+    String file = await loadAsset();
+
+    try {
+      List<String> lines = file.split('\n');
+      return lines;
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<void> enablePip() async {
+    const rational = Rational.vertical();
     floating.enable(
-      aspectRatio: const Rational.vertical(),
+      aspectRatio: rational,
     );
   }
 
@@ -77,26 +100,19 @@ class _SpeechScreenState extends State<SpeechScreen>
     });
   }
 
-  Future<T?> cast<T>(x) async {
-    if (x is T) {
-      return x;
-    } else {
-      return null;
-    }
-  }
-
   void _stopListening() async {
     await _speechToText.stop();
 
-    final collectionLocation = await collection.distinct('name');
-    List<String> allLocation = [];
-    for (var x in collectionLocation.values.first) {
-      allLocation.add(x as String);
-    }
+    //final collectionLocation = await collection.distinct('name');
+    List<String> allLocation = await readLocation();
+    // for (var x in collectionLocation.values.first) {
+    //   allLocation.add(x as String);
+    // }
 
     var matches = _speechWord.bestMatch(allLocation);
-    var destination = await collection.findOne({'name': matches.bestMatch.target});
-    if (destination != null && matches.bestMatch.rating! >=0.7 ) {
+    var destination =
+        await collection.findOne({'name': matches.bestMatch.target});
+    if (destination != null && matches.bestMatch.rating! >= 0.7) {
       TextToSpeech().speak('กำลังเปิดการนำทางไปที่ :${destination['name']}');
       enablePip();
       await launchUrl(Uri.parse(
@@ -158,13 +174,6 @@ class _SpeechScreenState extends State<SpeechScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  TextField(
-                    controller: myController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Enter a time duration',
-                    ),
-                  ),
                   Container(
                     padding: const EdgeInsets.all(16),
                     child: _speechToText.isNotListening
@@ -204,7 +213,6 @@ class _SpeechScreenState extends State<SpeechScreen>
       ),
       childWhenEnabled: YoloVideo(
         vision: vision,
-        intputduration: int.parse(myController.text),
       ),
     );
   }

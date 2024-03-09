@@ -9,9 +9,7 @@ import 'package:tadeeflutter/services/texttospeech.dart';
 
 class YoloVideo extends StatefulWidget {
   final FlutterVision vision;
-  final int intputduration;
-  const YoloVideo(
-      {super.key, required this.vision, required this.intputduration});
+  const YoloVideo({super.key, required this.vision});
 
   @override
   State<YoloVideo> createState() => _YoloVideoState();
@@ -22,12 +20,13 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   late List<CameraDescription> cameras;
   late CameraController controller;
   CameraImage? cameraImage;
-
+  int delayCam = 0;
+  final int delayThresh = 24;
   //YOLO
   bool isLoaded = false;
   bool isDetecting = false;
-  //static const String _modelPath = 'assets/yolov8n_float32.tflite';
-  //static const String _labelPath = 'assets/yolov8n_float32_labels.txt';
+  // static const String _modelPath = 'assets/yolov8n_float32.tflite';
+  // static const String _labelPath = 'assets/yolov8n_float32_labels.txt';
   static const String _modellocationPath = 'assets/location_float32.tflite';
   static const String _locationlabelPath = 'assets/location.txt';
   Timer? _timer;
@@ -44,7 +43,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
 
   init() async {
     cameras = await availableCameras();
-    controller = CameraController(cameras[0], ResolutionPreset.medium);
+    controller = CameraController(cameras[0], ResolutionPreset.low);
     await controller.initialize().then((value) {
       loadYoloModel().then((value) {
         setState(() {
@@ -60,7 +59,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   @override
   void dispose() async {
     super.dispose();
-    stopDetection();
+    //stopDetection();
     _timer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     controller.dispose();
@@ -85,7 +84,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
             controller,
           ),
         ),
-        ...displayBoxesAroundRecognizedObjects(size)
+        ...displayBoxesAroundRecognizedObjects(size),
       ],
     );
   }
@@ -98,7 +97,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
         modelPath: _modellocationPath,
         modelVersion: "yolov8",
         numThreads: 2,
-        useGpu: true);
+        useGpu: false);
   }
 
   Future<void> yoloOnFrame(CameraImage cameraImage) async {
@@ -132,11 +131,11 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
       for (var k in obstruct.keys) {
         log('$k : ${obstruct[k].toString()}');
         if (obstruct[k]!.isNotEmpty) {
-          stringBuild += '$k มี ${obstruct[k].toString()}';
+          stringBuild += '$kมี${obstruct[k].toString()}';
         }
-        result.clear();
       }
       TextToSpeech().speak(stringBuild);
+      delayCam = 0;
       setState(() {
         yoloResults = result;
       });
@@ -151,40 +150,31 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
     if (controller.value.isStreamingImages) {
       return;
     }
-
-    _timer = Timer.periodic(Duration(seconds: widget.intputduration), (timer) {
-      if (isDetecting) {
-        Timer(const Duration(milliseconds: 1000), () {
-          startStream();
-          Timer(const Duration(milliseconds: 1000), () {
-            stopStream();
-          });
-        });
-      } else {
-        timer.cancel();
-      }
-    });
+    startStream();
   }
 
   Future<void> startStream() async {
     await controller.startImageStream((image) {
       if (isDetecting) {
         cameraImage = image;
-        yoloOnFrame(image);
+        if (delayCam > 120) {
+          log('do frame');
+          yoloOnFrame(image);
+          delayCam = 0;
+        } else {
+          delayCam++;
+        }
       }
     });
   }
 
-  void stopStream() {
-    if (controller.value.isStreamingImages) {
-      controller.stopImageStream();
-    }
-  }
-
-  Future<void> stopDetection() async {
-    isDetecting = false;
-    yoloResults.clear();
-  }
+  // Future<void> stopDetection() async {
+  //   setState(() {
+  //     isDetecting = false;
+  //     yoloResults.clear();
+  //     controller.stopImageStream();
+  //   });
+  // }
 
   List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
     if (yoloResults.isEmpty) return [];
@@ -209,7 +199,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
             style: TextStyle(
               background: Paint()..color = colorPick,
               color: Colors.white,
-              fontSize: 18.0,
+              fontSize: 9.0,
             ),
           ),
         ),
