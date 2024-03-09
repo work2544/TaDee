@@ -218,8 +218,7 @@ class _SpeechScreenState extends State<SpeechScreen>
                           ),
                           Expanded(
                               child: Center(
-                            child: _speechToText.isNotListening ||
-                                    _speechWord == ''
+                            child: _speechToText.isNotListening
                                 ? const Text(
                                     'แตะกลางเจอเพื่อพูด',
                                     style: TextStyle(fontSize: 20.0),
