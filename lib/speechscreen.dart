@@ -210,16 +210,13 @@ class _SpeechScreenState extends State<SpeechScreen>
                   ],
                 ),
                 Expanded(
-                    flex: 0,
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(
-                            height: 200,
-                          ),
+                     
                           Expanded(
-                              child: Center(
+                              child: Container(
                             child: _speechToText.isNotListening
                                 ? const Text(
                                     'แตะกลางเจอเพื่อพูด',

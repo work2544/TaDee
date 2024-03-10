@@ -25,8 +25,10 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   //YOLO
   bool isLoaded = false;
   bool isDetecting = false;
-  static const String _modelPath = 'assets/new_object_float32.tflite';
-  static const String _labelPath = 'assets/new_object_labels.txt';
+  static const String _modelPath = 'assets/ensembling.tflite';
+  static const String _labelPath = 'assets/ensembling_label.txt';
+  // static const String _modelPath = 'assets/new_object_float32.tflite';
+  // static const String _labelPath = 'assets/new_object_labels.txt';
   // static const String _modellocationPath = 'assets/new_location_float32.tflite';
   // static const String _locationlabelPath = 'assets/new_location_labels.txt';
   Timer? _timer;
@@ -105,9 +107,9 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
         bytesList: cameraImage.planes.map((plane) => plane.bytes).toList(),
         imageHeight: cameraImage.height,
         imageWidth: cameraImage.width,
-        iouThreshold: 0.5,
-        confThreshold: 0.6,
-        classThreshold: 0.7);
+        iouThreshold: 0.4,
+        confThreshold: 0.4,
+        classThreshold: 0.5);
     if (result.isNotEmpty) {
       Map<String, Set<String>> obstruct = {
         'ด้านซ้าย': {},
@@ -157,8 +159,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
     await controller.startImageStream((image) {
       if (isDetecting) {
         cameraImage = image;
-        if (delayCam > 120) {
-          log('do frame');
+        if (delayCam > 60) {
           yoloOnFrame(image);
           delayCam = 0;
         } else {

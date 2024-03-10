@@ -14,6 +14,7 @@ class UploadImage extends StatefulWidget {
 }
 
 class _UploadImageState extends State<UploadImage> {
+  var dateTime;
   LocationData? currentLocation;
   late bool _serviceEnabled;
   late PermissionStatus _permissionGranted;
@@ -30,7 +31,7 @@ class _UploadImageState extends State<UploadImage> {
   static Db? db;
   late GridFS bucket;
 
-  late List<String> allLocation;
+  List<String>? allLocation;
 
   Future<String> loadLocation() async {
     return await rootBundle.loadString('assets/new_location_labels.txt');
@@ -38,8 +39,8 @@ class _UploadImageState extends State<UploadImage> {
 
   Future<void> readLocation() async {
     String file = await loadLocation();
-
-    List<String> lines = file.split('\n');
+    LineSplitter ls = new LineSplitter();
+    List<String> lines = ls.convert(file);
     setState(() {
       allLocation = lines;
     });
@@ -78,12 +79,12 @@ class _UploadImageState extends State<UploadImage> {
                         const SizedBox(
                           height: 15.0,
                         ),
-                        DropdownMenu(
-                          initialSelection: allLocation[0],
+                        allLocation == null? Text('กำลังโหลดข้อมูล'): DropdownMenu(
+                          initialSelection: allLocation![0],
                           controller: _locationName,
                           requestFocusOnTap: false,
                           label: const Text('ระบุชื่อสถานที่'),
-                          dropdownMenuEntries: allLocation
+                          dropdownMenuEntries: allLocation!
                               .map<DropdownMenuEntry<String>>(
                                   (String location) {
                             return DropdownMenuEntry<String>(
@@ -145,6 +146,7 @@ class _UploadImageState extends State<UploadImage> {
         "name": _locationName.text.replaceAll(' ', ''),
         "lat": currentLocation!.latitude,
         "lng": currentLocation!.longitude,
+        "date":dateTime,
         "data": base64Encode(bytes)
       };
       await bucket.chunks.insert(image);
@@ -155,6 +157,7 @@ class _UploadImageState extends State<UploadImage> {
 
   Future<void> getCurrentLocation() async {
     Location location = Location();
+    
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();
@@ -174,6 +177,7 @@ class _UploadImageState extends State<UploadImage> {
     location.getLocation().then(
       (location) {
         currentLocation = location;
+        dateTime = DateTime.now().toUtc().toIso8601String();
       },
     );
   }
@@ -232,6 +236,7 @@ class _UploadImageState extends State<UploadImage> {
   @override
   void initState() {
     super.initState();
+    WidgetsFlutterBinding.ensureInitialized();
     readLocation();
     connection();
   }
