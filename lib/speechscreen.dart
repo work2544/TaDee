@@ -175,6 +175,7 @@ class _SpeechScreenState extends State<SpeechScreen>
                         Padding(
                           padding: const EdgeInsets.only(right: 15),
                           child: FloatingActionButton(
+                            heroTag: "btn1",
                             backgroundColor:
                                 const Color.fromARGB(255, 15, 2, 131),
                             tooltip: 'เพิ่มสถานที่',
@@ -189,6 +190,7 @@ class _SpeechScreenState extends State<SpeechScreen>
                         Padding(
                           padding: const EdgeInsets.only(right: 15),
                           child: FloatingActionButton(
+                            heroTag: "btn2",
                             backgroundColor:
                                 const Color.fromARGB(255, 15, 2, 131),
                             tooltip: 'ตรวจจับวัตถุ',
