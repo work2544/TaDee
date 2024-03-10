@@ -20,17 +20,13 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   late List<CameraDescription> cameras;
   late CameraController controller;
   CameraImage? cameraImage;
-  int delayCam = 0;
-  final int delayThresh = 24;
+  //int delayCam = 0;
+
   //YOLO
   bool isLoaded = false;
   bool isDetecting = false;
   static const String _modelPath = 'assets/ensembling.tflite';
   static const String _labelPath = 'assets/ensembling_label.txt';
-  // static const String _modelPath = 'assets/new_object_float32.tflite';
-  // static const String _labelPath = 'assets/new_object_labels.txt';
-  // static const String _modellocationPath = 'assets/new_location_float32.tflite';
-  // static const String _locationlabelPath = 'assets/new_location_labels.txt';
   Timer? _timer;
 
   late List<Map<String, dynamic>> yoloResults;
@@ -122,9 +118,9 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
         double startX = result[i]["box"][0];
         double endX = result[i]["box"][2];
 
-        if (startX >= 0 && endX <= 155) {
+        if (startX >= 0 && endX <= 120) {
           obstruct['ด้านซ้าย']!.add(result[i]['tag']);
-        } else if (startX >= 325 && endX <= 480) {
+        } else if (startX >= 360 && endX <= 480) {
           obstruct['ด้านขวา']!.add(result[i]['tag']);
         } else {
           obstruct['ด้านหน้า']!.add(result[i]['tag']);
@@ -137,7 +133,6 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
         }
       }
       TextToSpeech().speak(stringBuild);
-      delayCam = 0;
       setState(() {
         yoloResults = result;
       });
@@ -152,24 +147,20 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
     if (controller.value.isStreamingImages) {
       return;
     }
-    startStream();
-  }
-
-  Future<void> startStream() async {
-    await controller.startImageStream((image) {
+   await controller.startImageStream((image) async {
       if (isDetecting) {
         cameraImage = image;
-        if (delayCam > 60) {
-          yoloOnFrame(image);
-          delayCam = 0;
-        } else {
-          delayCam++;
-        }
+        yoloOnFrame(image);
       }
     });
   }
 
+  Future<void> startStream() async {
+    
+  }
+
   List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
+    log(yoloResults.toString());
     if (yoloResults.isEmpty) return [];
     double factorX = screen.width / (cameraImage?.height ?? 1);
     double factorY = screen.height / (cameraImage?.width ?? 1);
