@@ -104,7 +104,7 @@ class _SpeechScreenState extends State<SpeechScreen>
     var matches = _speechWord.bestMatch(allLocation);
     var destination =
         await collection.findOne({'name': matches.bestMatch.target});
-    if (destination != null && matches.bestMatch.rating! >= 0.7) {
+    if (destination != null && matches.bestMatch.rating! >= 0.6) {
       TextToSpeech().speak('กำลังเปิดการนำทางไปที่ :${destination['name']}');
       enablePip();
       await launchUrl(Uri.parse(
