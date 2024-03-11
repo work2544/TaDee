@@ -160,25 +160,27 @@ class _SpeechScreenState extends State<SpeechScreen>
         textAlign: TextAlign.center,
       );
     }
-    if (_speechToText.isNotListening || _speechWord == '') {
-      return const Text(
-        'แตะกลางจอเพื่อพูด',
-        style: TextStyle(fontSize: 20.0),
-        textAlign: TextAlign.center,
-      );
-    } else if (_speechToText.isListening && _speechWord == '') {
-      return const Text(
-        'กำลังฟังชื่อสถานที่...',
-        style: TextStyle(fontSize: 20.0),
-        textAlign: TextAlign.center,
-      );
-    } else {
+    if (_speechWord != '') {
       return Text(
         _speechWord,
         style: const TextStyle(fontSize: 20.0),
         textAlign: TextAlign.center,
       );
     }
+    if (_speechToText.isNotListening) {
+      return const Text(
+        'แตะกลางจอเพื่อพูด',
+        style: TextStyle(fontSize: 20.0),
+        textAlign: TextAlign.center,
+      );
+    } else if (_speechToText.isListening) {
+      return const Text(
+        'กำลังฟังชื่อสถานที่...',
+        style: TextStyle(fontSize: 20.0),
+        textAlign: TextAlign.center,
+      );
+    }
+    return const Text('มีข้อผิดพลาด');
   }
 
   @override

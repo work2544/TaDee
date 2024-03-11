@@ -1,8 +1,5 @@
 import 'dart:async';
-import 'dart:developer';
-
 import 'package:camera/camera.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_vision/flutter_vision.dart';
 import 'package:tadeeflutter/services/texttospeech.dart';
@@ -24,8 +21,10 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   //YOLO
   bool isLoaded = false;
   bool isDetecting = false;
-  static const String _modelPath = 'assets/ensembling.tflite';
-  static const String _labelPath = 'assets/ensembling_label.txt';
+  // static const String _modelPath = 'assets/ensembling.tflite';
+  // static const String _labelPath = 'assets/ensembling_label.txt';
+  static const String _modelPath = 'assets/new_model.tflite';
+  static const String _labelPath = 'assets/new_label.txt';
 
   late List<Map<String, dynamic>> yoloResults;
 
