@@ -121,7 +121,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
         }
       }
       for (var k in obstruct.keys) {
-        log('$k : ${obstruct[k].toString()}');
+        
         if (obstruct[k]!.isNotEmpty) {
           stringBuild += '$kมี${obstruct[k].toString()}';
         }
@@ -154,7 +154,6 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   }
 
   List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
-    log(yoloResults.toString());
     if (yoloResults.isEmpty) return [];
     double factorX = screen.width / (cameraImage?.height ?? 1);
     double factorY = screen.height / (cameraImage?.width ?? 1);

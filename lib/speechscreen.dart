@@ -112,7 +112,7 @@ class _SpeechScreenState extends State<SpeechScreen>
     }
     setState(() {
       onSpeech = false;
-
+      destination = null;
       if (destination == null) {
         TextToSpeech().speak('ฉันไม่รู้จักสถานที่นี้');
         _speechWord = '';
@@ -160,7 +160,7 @@ class _SpeechScreenState extends State<SpeechScreen>
         textAlign: TextAlign.center,
       );
     }
-    if (_speechToText.isNotListening) {
+    if (_speechToText.isNotListening || _speechWord == '') {
       return const Text(
         'แตะกลางจอเพื่อพูด',
         style: TextStyle(fontSize: 20.0),
@@ -172,14 +172,13 @@ class _SpeechScreenState extends State<SpeechScreen>
         style: TextStyle(fontSize: 20.0),
         textAlign: TextAlign.center,
       );
-    } else{
+    } else {
       return Text(
         _speechWord,
         style: const TextStyle(fontSize: 20.0),
         textAlign: TextAlign.center,
       );
     }
-
   }
 
   @override
