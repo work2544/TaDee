@@ -54,6 +54,7 @@ dependencies:
   wakelock_plus: ^1.1.4
   string_similarity: ^2.0.0
   path_provider: ^2.1.2
+  flutter_launcher_icons: ^0.13.1
   
 
 dev_dependencies:
@@ -66,11 +67,15 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^3.0.1
+flutter_launcher_icons:
+  android: "ic_launcher"
+  image_path: "assets/icon/tadeeicon.jpg"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+
 flutter:
 
   # The following line ensures that the Material Icons font is

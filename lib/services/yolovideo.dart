@@ -20,14 +20,12 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   late List<CameraDescription> cameras;
   late CameraController controller;
   CameraImage? cameraImage;
-  //int delayCam = 0;
 
   //YOLO
   bool isLoaded = false;
   bool isDetecting = false;
   static const String _modelPath = 'assets/ensembling.tflite';
   static const String _labelPath = 'assets/ensembling_label.txt';
-  Timer? _timer;
 
   late List<Map<String, dynamic>> yoloResults;
 
@@ -57,8 +55,6 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   @override
   void dispose() async {
     super.dispose();
-    //stopDetection();
-    _timer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     controller.dispose();
   }
@@ -91,8 +87,6 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
     await widget.vision.loadYoloModel(
         labels: _labelPath,
         modelPath: _modelPath,
-        // labels: _locationlabelPath,
-        // modelPath: _modellocationPath,
         modelVersion: "yolov8",
         numThreads: 2,
         useGpu: false);

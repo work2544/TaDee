@@ -34,12 +34,12 @@ class _UploadImageState extends State<UploadImage> {
   List<String>? allLocation;
 
   Future<String> loadLocation() async {
-    return await rootBundle.loadString('assets/new_location_labels.txt');
+    return await rootBundle.loadString('assets/location.txt');
   }
 
   Future<void> readLocation() async {
     String file = await loadLocation();
-    LineSplitter ls = new LineSplitter();
+    LineSplitter ls = const LineSplitter();
     List<String> lines = ls.convert(file);
     setState(() {
       allLocation = lines;
@@ -79,20 +79,22 @@ class _UploadImageState extends State<UploadImage> {
                         const SizedBox(
                           height: 15.0,
                         ),
-                        allLocation == null? Text('กำลังโหลดข้อมูล'): DropdownMenu(
-                          initialSelection: allLocation![0],
-                          controller: _locationName,
-                          requestFocusOnTap: false,
-                          label: const Text('ระบุชื่อสถานที่'),
-                          dropdownMenuEntries: allLocation!
-                              .map<DropdownMenuEntry<String>>(
-                                  (String location) {
-                            return DropdownMenuEntry<String>(
-                              value: location,
-                              label: location,
-                            );
-                          }).toList(),
-                        ),
+                        allLocation == null
+                            ? const Text('กำลังโหลดข้อมูล')
+                            : DropdownMenu(
+                                initialSelection: allLocation![0],
+                                controller: _locationName,
+                                requestFocusOnTap: false,
+                                label: const Text('ระบุชื่อสถานที่'),
+                                dropdownMenuEntries: allLocation!
+                                    .map<DropdownMenuEntry<String>>(
+                                        (String location) {
+                                  return DropdownMenuEntry<String>(
+                                    value: location,
+                                    label: location,
+                                  );
+                                }).toList(),
+                              ),
                         ElevatedButton(
                           onPressed: () async {
                             if (_formKey.currentState!.validate() &&
@@ -118,6 +120,8 @@ class _UploadImageState extends State<UploadImage> {
                       ]),
                     ))));
   }
+
+
 
   void pickImageCamera() async {
     try {
@@ -146,7 +150,7 @@ class _UploadImageState extends State<UploadImage> {
         "name": _locationName.text.replaceAll(' ', ''),
         "lat": currentLocation!.latitude,
         "lng": currentLocation!.longitude,
-        "date":dateTime,
+        "date": dateTime,
         "data": base64Encode(bytes)
       };
       await bucket.chunks.insert(image);
@@ -157,7 +161,7 @@ class _UploadImageState extends State<UploadImage> {
 
   Future<void> getCurrentLocation() async {
     Location location = Location();
-    
+
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();

@@ -11,6 +11,7 @@ import 'package:tadeeflutter/services/yolovideo.dart';
 import 'package:floating/floating.dart';
 import 'package:string_similarity/string_similarity.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 
 class SpeechScreen extends StatefulWidget {
@@ -62,9 +63,10 @@ class _SpeechScreenState extends State<SpeechScreen>
 
   Future<List<String>> readLocation() async {
     String file = await loadLocation();
+    LineSplitter ls = const LineSplitter();
 
     try {
-      List<String> lines = file.split('\n');
+      List<String> lines = ls.convert(file);
       return lines;
     } catch (e) {
       return [];
@@ -135,8 +137,8 @@ class _SpeechScreenState extends State<SpeechScreen>
         await db!.open();
         collection = db!.collection('TaDee.chunks');
         _initSpeech();
+        TextToSpeech().speak('กรุณาแตะกลางหน้าจอแล้วพูดชื่อสถานที่');
         setState(() {
-          TextToSpeech().speak('กรุณาแตะกลางหน้าจอแล้วพูดชื่อสถานที่');
           isConnecting = false;
         });
       } catch (e) {
@@ -148,6 +150,36 @@ class _SpeechScreenState extends State<SpeechScreen>
         isConnecting = false;
       });
     }
+  }
+
+  Widget renderStatus() {
+    if (db == null) {
+      return const Text(
+        'กำลังโหลดข้อมูล',
+        style: TextStyle(fontSize: 20.0),
+        textAlign: TextAlign.center,
+      );
+    }
+    if (_speechToText.isNotListening) {
+      return const Text(
+        'แตะกลางจอเพื่อพูด',
+        style: TextStyle(fontSize: 20.0),
+        textAlign: TextAlign.center,
+      );
+    } else if (_speechToText.isListening && _speechWord == '') {
+      return const Text(
+        'กำลังฟังชื่อสถานที่...',
+        style: TextStyle(fontSize: 20.0),
+        textAlign: TextAlign.center,
+      );
+    } else{
+      return Text(
+        _speechWord,
+        style: const TextStyle(fontSize: 20.0),
+        textAlign: TextAlign.center,
+      );
+    }
+
   }
 
   @override
@@ -214,33 +246,8 @@ class _SpeechScreenState extends State<SpeechScreen>
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                     
-                          Expanded(
-                              child: Container(
-                            child: _speechToText.isNotListening
-                                ? const Text(
-                                    'แตะกลางเจอเพื่อพูด',
-                                    style: TextStyle(fontSize: 20.0),
-                                    textAlign: TextAlign.center,
-                                  )
-                                : Expanded(
-                                    child: Container(
-                                      child: _speechWord == ''
-                                          ? const Text(
-                                              'กำลังฟังชื่อสถานที่...',
-                                              style: TextStyle(fontSize: 20.0),
-                                              textAlign: TextAlign.center,
-                                            )
-                                          : Text(
-                                              _speechWord,
-                                              style: const TextStyle(
-                                                  fontSize: 20.0),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                    ),
-                                  ),
-                          ))
-                        ]))
+                      Expanded(child: Container(child: renderStatus()))
+                    ]))
               ],
             ),
           ),
