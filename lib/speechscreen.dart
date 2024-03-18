@@ -4,7 +4,6 @@ import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:mongo_dart/mongo_dart.dart' show Db, DbCollection;
 import 'package:tadeeflutter/uploadimage.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'services/texttospeech.dart';
 import 'package:flutter_vision/flutter_vision.dart';
 import 'package:tadeeflutter/services/yolovideo.dart';
@@ -102,21 +101,26 @@ class _SpeechScreenState extends State<SpeechScreen>
 
     List<String> allLocation = await readLocation();
     var matches = _speechWord.bestMatch(allLocation);
-    var destination =
-        await collection.findOne({'name': matches.bestMatch.target});
-    if (destination != null && matches.bestMatch.rating! >= 0.6) {
-      TextToSpeech().speak('กำลังเปิดการนำทางไปที่ :${destination['name']}');
-      enablePip();
-      await launchUrl(Uri.parse(
-          'https://www.google.com/maps/dir/?api=1&destination=${destination['lat']},${destination['lng']}&travelmode=walking'));
+    //dev.log('$_speechWord ... ${matches.toString()}');
+
+    if (matches.bestMatch.rating! >= 0.7) {
+      var destination =
+          await collection.findOne({'name': matches.bestMatch.target});
+      if (destination != null) {
+        TextToSpeech().speak('กำลังเปิดการนำทางไปที่ :${destination['name']}');
+        // enablePip();
+        // await launchUrl(Uri.parse(
+        //     'https://www.google.com/maps/dir/?api=1&destination=${destination['lat']},${destination['lng']}&travelmode=walking'));
+      }
+      else {
+      TextToSpeech().speak('ฉันไม่รู้จักสถานที่นี้');
+    }
+    } else {
+      TextToSpeech().speak('กรุณาพูดอีกครั้ง');
     }
     setState(() {
       onSpeech = false;
-
-      if (destination == null) {
-        TextToSpeech().speak('ฉันไม่รู้จักสถานที่นี้');
-        _speechWord = '';
-      }
+      _speechWord = '';
     });
   }
 
@@ -172,14 +176,13 @@ class _SpeechScreenState extends State<SpeechScreen>
         style: TextStyle(fontSize: 20.0),
         textAlign: TextAlign.center,
       );
-    } else{
+    } else {
       return Text(
         _speechWord,
         style: const TextStyle(fontSize: 20.0),
         textAlign: TextAlign.center,
       );
     }
-
   }
 
   @override
