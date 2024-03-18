@@ -108,17 +108,17 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
       for (var i = 0; i < result.length; i++) {
         double startX = result[i]["box"][0];
         double endX = result[i]["box"][2];
+        double middle = (endX - startX) / 2;
 
-        if (startX >= 0 && endX <= 120) {
+        if (middle <= 120) {
           obstruct['ด้านซ้าย']!.add(result[i]['tag']);
-        } else if (startX >= 360 && endX <= 480) {
+        } else if (middle >= 360 && middle <= 480) {
           obstruct['ด้านขวา']!.add(result[i]['tag']);
         } else {
           obstruct['ด้านหน้า']!.add(result[i]['tag']);
         }
       }
       for (var k in obstruct.keys) {
-        
         if (obstruct[k]!.isNotEmpty) {
           stringBuild += '$kมี${obstruct[k].toString()}';
         }
@@ -138,7 +138,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
     if (controller.value.isStreamingImages) {
       return;
     }
-   await controller.startImageStream((image) async {
+    await controller.startImageStream((image) async {
       if (isDetecting) {
         cameraImage = image;
         yoloOnFrame(image);
@@ -146,9 +146,7 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
     });
   }
 
-  Future<void> startStream() async {
-    
-  }
+  Future<void> startStream() async {}
 
   List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
     if (yoloResults.isEmpty) return [];
