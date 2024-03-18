@@ -121,8 +121,6 @@ class _UploadImageState extends State<UploadImage> {
                     ))));
   }
 
-
-
   void pickImageCamera() async {
     try {
       final pickedImages = await _picker.pickImage(

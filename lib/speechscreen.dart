@@ -120,6 +120,11 @@ class _SpeechScreenState extends State<SpeechScreen>
     }
     setState(() {
       onSpeech = false;
+      destination = null;
+      if (destination == null) {
+        TextToSpeech().speak('ฉันไม่รู้จักสถานที่นี้');
+        _speechWord = '';
+      }
       _speechWord = '';
     });
   }
@@ -164,18 +169,27 @@ class _SpeechScreenState extends State<SpeechScreen>
         textAlign: TextAlign.center,
       );
     }
+    if (_speechWord != '') {
+      return Text(
+        _speechWord,
+        style: const TextStyle(fontSize: 20.0),
+        textAlign: TextAlign.center,
+      );
+    }
     if (_speechToText.isNotListening) {
       return const Text(
         'แตะกลางจอเพื่อพูด',
         style: TextStyle(fontSize: 20.0),
         textAlign: TextAlign.center,
       );
-    } else if (_speechToText.isListening && _speechWord == '') {
+    } else if (_speechToText.isListening) {
       return const Text(
         'กำลังฟังชื่อสถานที่...',
         style: TextStyle(fontSize: 20.0),
         textAlign: TextAlign.center,
       );
+    }
+    return const Text('มีข้อผิดพลาด');
     } else {
       return Text(
         _speechWord,
