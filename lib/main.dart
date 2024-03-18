@@ -36,12 +36,12 @@ class _MyAppState extends State<MyApp> {
     WakelockPlus.enable();
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return  const SpeechScreen();
-  // }
   @override
   Widget build(BuildContext context) {
-    return const Test();
+    return  const SpeechScreen();
   }
+  // @override
+  // Widget build(BuildContext context) {
+  //   return const Test();
+  // }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vision/flutter_vision.dart';
@@ -108,11 +109,12 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
       for (var i = 0; i < result.length; i++) {
         double startX = result[i]["box"][0];
         double endX = result[i]["box"][2];
-        double middle = (endX - startX) / 2;
-
-        if (middle <= 120) {
+        double middle = (endX + startX) / 2;
+        log('$startX     $endX');
+        log(middle.toString());
+        if (middle <= 90) {
           obstruct['ด้านซ้าย']!.add(result[i]['tag']);
-        } else if (middle >= 360 && middle <= 480) {
+        } else if (middle >= 150) {
           obstruct['ด้านขวา']!.add(result[i]['tag']);
         } else {
           obstruct['ด้านหน้า']!.add(result[i]['tag']);
@@ -150,9 +152,8 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
 
   List<Widget> displayBoxesAroundRecognizedObjects(Size screen) {
     if (yoloResults.isEmpty) return [];
-    double factorX = screen.width / (cameraImage?.height ?? 1);
-    double factorY = screen.height / (cameraImage?.width ?? 1);
-
+    double factorX = screen.width / (cameraImage?.height ?? 1); //240
+    double factorY = screen.height / (cameraImage?.width ?? 1); //320
     Color colorPick = const Color.fromARGB(255, 50, 233, 30);
 
     return yoloResults.map((result) {
