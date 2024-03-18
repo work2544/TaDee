@@ -21,10 +21,8 @@ class _YoloVideoState extends State<YoloVideo> with WidgetsBindingObserver {
   //YOLO
   bool isLoaded = false;
   bool isDetecting = false;
-  // static const String _modelPath = 'assets/ensembling.tflite';
-  // static const String _labelPath = 'assets/ensembling_label.txt';
-  static const String _modelPath = 'assets/new_model.tflite';
-  static const String _labelPath = 'assets/new_label.txt';
+  static const String _modelPath = 'assets/ensembling.tflite';
+  static const String _labelPath = 'assets/ensembling_label.txt';
 
   late List<Map<String, dynamic>> yoloResults;
 
